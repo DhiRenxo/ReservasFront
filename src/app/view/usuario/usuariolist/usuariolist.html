@@ -1,0 +1,62 @@
+<h2>Lista de Usuarios</h2>
+<button class="btn btn-primary mb-3" (click)="abrirModal()">Crear nuevo</button>
+<div class="mb-3 d-flex gap-2">
+  <input type="text" class="form-control" placeholder="Buscar por nombre o correo" [(ngModel)]="filtroTexto" (input)="filtrar()" />
+  <input type="date" class="form-control" [(ngModel)]="filtroFecha" (change)="filtrar()" />
+  <div class="col-md-3">
+    <select class="form-control" [(ngModel)]="filtroEstado" (change)="filtrar()">
+      <option value="">Todos</option>
+      <option value="true">Activos</option>
+      <option value="false">Inactivos</option>
+    </select>
+  </div>
+</div>
+
+<table class="table table-bordered table-sm table-hover">
+  <thead class="table-dark">
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Correo</th>
+      <th>Rol</th>
+      <th>Fecha creación</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let usuario of usuarios">
+      <td>{{ usuario.id }}</td>
+      <td>{{ usuario.nombre }}</td>
+      <td>{{ usuario.correo }}</td>
+      <td>{{ obtenerNombreRol(usuario.rolid) }}</td>
+      <td>{{ formatearFecha(usuario.fechacreacion) }}</td>
+      <td><span [class.text-success]="usuario.estado" [class.text-danger]="!usuario.estado">
+            {{ usuario.estado ? 'Activo' : 'Inactivo' }}
+          </span></td>
+      <td>
+        <button class="btn btn-sm btn-warning" (click)="abrirModal(usuario.id)">Editar</button>
+        <button class="btn btn-sm btn-danger ms-1" (click)="eliminar(usuario.id)">Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade show d-block" *ngIf="mostrarModal" tabindex="-1" style="background: rgba(0, 0, 0, 0.5)">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ usuarioEditandoId ? 'Editar Usuario' : 'Crear Usuario' }}</h5>
+        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <app-usuarioform
+          [idUsuario]="usuarioEditandoId"
+          (cerrar)="cerrarModal()"
+          (onGuardado)="cargarUsuarios()">
+        </app-usuarioform>
+      </div>
+    </div>
+  </div>
+</div>

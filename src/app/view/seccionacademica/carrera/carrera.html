@@ -1,0 +1,42 @@
+<div class="formulario">
+  <form [formGroup]="carreraForm" (ngSubmit)="enviar()">
+    <label for="nombre" class="sr-only">Nombre</label>
+    <input type="text" formControlName="nombre" placeholder="Nombre de la carrera" />
+    
+    <label for="nomenclatura" class="sr-only">Nomenclatura</label>
+    <input type="text" formControlName="nomenglatura" placeholder="Nomenclatura (1 letra)" maxlength="1" />
+    
+    <button type="submit" [disabled]="carreraForm.invalid">
+      {{ editMode ? 'Actualizar' : 'Crear' }}
+    </button>
+    <button type="button" *ngIf="editMode" (click)="resetForm()">Cancelar</button>
+  </form>
+</div>
+
+<div class="cards-container">
+  <div class="card" *ngFor="let c of carrerasPaginadas">
+    <div class="icon">{{ c.nomenglatura }}</div>
+    <div class="info">
+      <h3>{{ c.nombre }}</h3>
+      <small>ID: {{ c.id }}</small>
+      <p class="estado" [class.activo]="c.status" [class.inactivo]="!c.status">
+         Estado: {{ c.status ? 'Activo' : 'Inactivo' }}
+        </p>
+
+    </div>
+    <div class="actions">
+      <button (click)="editar(c)">✏️</button>
+      <button (click)="eliminar(c.id)">🗑️</button>
+    </div>
+  </div>
+</div>
+
+<div class="paginacion">
+  <button 
+    *ngFor="let page of pages" 
+    (click)="cambiarPagina(page)" 
+    [class.activa]="page === currentPage">
+    {{ page }}
+  </button>
+</div>
+

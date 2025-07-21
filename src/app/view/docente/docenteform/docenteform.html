@@ -1,0 +1,52 @@
+<div class="modal show d-block" tabindex="-1" style="background: rgba(0,0,0,0.4)">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">{{ esEdicion ? 'Editar Docente' : 'Nuevo Docente' }}</h5>
+        <button type="button" class="btn-close" (click)="cancelar()"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="guardar()" #f="ngForm">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" [(ngModel)]="docente.nombre" name="nombre" required />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Código</label>
+              <input type="text" class="form-control" [(ngModel)]="docente.codigo" name="codigo" required />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Tipo de Contrato</label>
+              <input type="text" class="form-control" [(ngModel)]="docente.tipocontrato" name="tipocontrato" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Horas Semanales</label>
+              <input type="number" class="form-control" [(ngModel)]="docente.horassemanal" name="horassemanal" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Horas Actual</label>
+              <input type="number" class="form-control" [(ngModel)]="docente.horasactual" name="horasactual" required />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" [(ngModel)]="docente.estado" name="estado">
+              <option [ngValue]="true">Activo</option>
+              <option [ngValue]="false">Inactivo</option>
+            </select>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

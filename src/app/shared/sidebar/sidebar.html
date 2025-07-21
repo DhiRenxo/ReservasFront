@@ -1,0 +1,78 @@
+<div class="d-flex flex-column bg-dark text-white vh-100 p-3 sidebar-container" [ngClass]="{ 'collapsed': isCollapsed }">
+  <!-- Botones de colapsar -->
+  <div class="text-end mb-2">
+    <button class="btn btn-sm btn-outline-light me-1" (click)="collapseSidebar()" *ngIf="!isCollapsed">&lt;</button>
+    <button class="btn btn-sm btn-outline-light" (click)="expandSidebar()" *ngIf="isCollapsed">&gt;</button>
+  </div>
+
+  <div class="user-info text-center mb-3" *ngIf="usuario">
+      <img *ngIf="usuario.foto_url; else noFoto"
+          [src]="usuario.foto_url"
+          alt="Foto de perfil"
+          class="rounded-circle user-image">
+      <ng-template #noFoto>
+        <div class="bg-secondary rounded-circle d-inline-block user-image">
+          <i class="fas fa-user text-white"></i>
+        </div>
+      </ng-template>
+
+      <div class="mt-2 user-details" *ngIf="!isCollapsed">
+        <span class="fw-bold d-block">{{ usuario.nombre }}</span>
+        <small class="text-secondary">{{ obtenerRolTexto(usuario.rolid) }}</small>
+      </div>
+    </div>
+
+
+
+  <ul class="menu list-unstyled">
+  <li *ngFor="let item of menu" class="mb-1">
+    <!-- Si el item tiene hijos -->
+    <ng-container *ngIf="item.items; else normalItem">
+      <div class="nav-link d-flex align-items-center justify-content-between"
+           (click)="item.expanded = !item.expanded">
+        <div class="d-flex align-items-center">
+          <i class="{{ item.icon }}"></i>
+          <span *ngIf="!isCollapsed" class="ms-2">{{ item.label }}</span>
+        </div>
+        <i *ngIf="!isCollapsed" class="fas" [ngClass]="item.expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </div>
+      <ul *ngIf="item.expanded && !isCollapsed" class="list-unstyled ms-4 mt-1">
+        <li *ngFor="let subItem of item.items">
+          <a class="nav-link d-flex align-items-center"
+             [routerLink]="subItem.route"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }">
+            <i class="{{ subItem.icon }}"></i>
+            <span class="ms-2">{{ subItem.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </ng-container>
+
+    <!-- Si es un ítem normal -->
+    <ng-template #normalItem>
+      <a class="nav-link d-flex align-items-center"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }">
+        <i class="{{ item.icon }}"></i>
+        <span *ngIf="!isCollapsed" class="ms-2">{{ item.label }}</span>
+      </a>
+    </ng-template>
+  </li>
+</ul>
+
+
+
+  <!-- Ajustes y cerrar sesión -->
+  <div class="mt-auto pt-3 border-top border-secondary">
+    <a class="nav-link text-white" href="#">
+      <i class="fas fa-cog me-2"></i>
+      <span *ngIf="!isCollapsed">Ajustes</span>
+    </a>
+    <a class="nav-link text-danger" href="#">
+      <i class="fas fa-sign-out-alt me-2"></i>
+      <span *ngIf="!isCollapsed">Cerrar Sesión</span>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  background: black url("../../assets/images/login.jpg") no-repeat center center;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* oscurece el fondo */
+  z-index: 0;
+}
+
+.login-container {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.5); /* semi-transparente */
+  border-radius: 16px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.google-btn {
+  background-color: red;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.google-btn:hover {
+  background-color: darkred;
+}
+
+.google-logo {
+  width: 24px;
+  height: 24px;
+}
+
+.login-img {
+  width: 100px;
+  height: auto;
+}

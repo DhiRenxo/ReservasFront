@@ -1,0 +1,99 @@
+<div class="container mt-4">
+  <h2>Lista de Docentes</h2>
+  <button class="btn btn-success mb-3" (click)="nuevo()">Nuevo Docente</button>
+    <div class="row mb-3">
+  <div class="col-md-3">
+    <input type="text" class="form-control" placeholder="Buscar por nombre"
+      [value]="filtros().nombre"
+      (input)="actualizarFiltro('nombre', $any($event.target).value)" />
+  </div>
+  <div class="col-md-2">
+    <input type="text" class="form-control" placeholder="Buscar por código"
+      [value]="filtros().codigo"
+      (input)="actualizarFiltro('codigo', $any($event.target).value)" />
+  </div>
+  <div class="col-md-3">
+    <input type="text" class="form-control" placeholder="Buscar por tipo contrato"
+      [value]="filtros().tipocontrato"
+      (input)="actualizarFiltro('tipocontrato', $any($event.target).value)" />
+  </div>
+  <div class="col-md-2">
+    <select class="form-select"
+      [value]="filtros().estado"
+      (change)="actualizarFiltro('estado', $any($event.target).value)">
+      <option value="">Estado</option>
+      <option value="activo">Activo</option>
+      <option value="inactivo">Inactivo</option>
+    </select>
+  </div>
+</div>
+
+
+
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>N°</th>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Contrato</th>
+        <th>Horas Semanales</th>
+        <th>Horas Actual</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of docentesPaginados; let i = index">
+        <td>{{ (currentPage() - 1) * pageSize + i + 1 }}</td>
+        <td>{{ d.nombre }}</td>
+        <td>{{ d.codigo }}</td>
+        <td>{{ d.tipocontrato }}</td>
+        <td>{{ d.horassemanal }}</td>
+        <td>{{ d.horasactual }}</td>
+        <td>
+          <span [ngClass]="d.estado ? 'text-success' : 'text-danger'">
+            {{ d.estado ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-warning btn-sm" (click)="editar(d)">Editar</button>
+          <button class="btn btn-danger btn-sm ms-2" (click)="eliminar(d.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Controles de paginación -->
+  <div *ngIf="totalPages > 1" class="d-flex justify-content-center align-items-center gap-2 mt-3">
+    <button class="btn btn-outline-primary btn-sm"
+            (click)="anteriorPagina()"
+            [disabled]="currentPage() === 1">
+      Anterior
+    </button>
+
+    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+      <button class="btn btn-sm"
+              [ngClass]="{ 'btn-primary': currentPage() === i + 1, 'btn-outline-primary': currentPage() !== i + 1 }"
+              (click)="cambiarPagina(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </ng-container>
+
+    <button class="btn btn-outline-primary btn-sm"
+            (click)="siguientePagina()"
+            [disabled]="currentPage() === totalPages">
+      Siguiente
+    </button>
+  </div>
+</div>
+
+<!-- Modal -->
+<app-docente-form
+  *ngIf="mostrarModal()"
+  [docente]="docenteActual()"
+  [esEdicion]="esEdicion()"
+  (onGuardar)="guardar($event)"
+  (onCancelar)="cancelarModal()"
+></app-docente-form>
