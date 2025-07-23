@@ -1,0 +1,14 @@
+.main-container {
+  min-width: 100%;
+}
+
+.sidebar-container {
+  width: 80px; /* O el ancho que tenga tu sidebar */
+  background-color: #1f2937; /* ajusta según tu color */
+  min-height: 100vh;
+}
+
+.content-container {
+  min-width: 0; /* Previene que flexbox rompa el layout en pantallas pequeñas */
+  background-color: #fff;
+}

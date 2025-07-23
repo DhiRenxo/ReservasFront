@@ -1,1 +1,186 @@
-<p>curso works!</p>
+
+<div class="main-container">
+<!-- Botón para abrir el modal -->
+<div class="d-flex justify-content-between align-items-center mb-3 text-dark">
+  <h2>Gestión de Cursos</h2>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#crearCursoModal">
+    Crear Curso
+  </button>
+</div>
+
+<!-- Modal de formulario -->
+<div class="modal fade" id="crearCursoModal" tabindex="-1" aria-labelledby="crearCursoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-white text-dark">
+      <form [formGroup]="formCurso" (ngSubmit)="crearCurso()">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title" id="crearCursoLabel">Nuevo Curso</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Carrera</label>
+            <select formControlName="carreid" class="form-select bg-white text-dark border-secondary">
+              <option *ngFor="let c of carreras" [value]="c.id">{{ c.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Plan</label>
+            <select formControlName="plan" class="form-select bg-white text-dark border-secondary">
+              <option *ngFor="let p of planesEstudio" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Ciclo</label>
+            <select formControlName="ciclo" class="form-select bg-white text-dark border-secondary">
+              <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Código</label>
+            <input formControlName="codigo" class="form-control bg-white text-dark border-secondary" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Nombre</label>
+            <input formControlName="nombre" class="form-control bg-white text-dark border-secondary" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Horas</label>
+            <input formControlName="horas" type="number" class="form-control bg-white text-dark border-secondary" />
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="submit" class="btn btn-success" [disabled]="formCurso.invalid" data-bs-dismiss="modal">
+            Guardar
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal fade" id="editarCursoModal" tabindex="-1" aria-labelledby="editarCursoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-white text-dark">
+      <form [formGroup]="formEditarCurso" (ngSubmit)="actualizarCurso()">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title" id="editarCursoLabel">Editar Curso</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Carrera</label>
+            <select formControlName="carreid" class="form-select bg-white text-dark border-secondary">
+              <option *ngFor="let c of carreras" [value]="c.id">{{ c.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Plan</label>
+            <select formControlName="plan" class="form-select bg-white text-dark border-secondary">
+              <option *ngFor="let p of planesEstudio" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Ciclo</label>
+            <select formControlName="ciclo" class="form-select bg-white text-dark border-secondary">
+              <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Código</label>
+            <input formControlName="codigo" class="form-control bg-white text-dark border-secondary" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Nombre</label>
+            <input formControlName="nombre" class="form-control bg-white text-dark border-secondary" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Horas</label>
+            <input formControlName="horas" type="number" class="form-control bg-white text-dark border-secondary" />
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Guardar Cambios</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="row g-2 mb-4 text-dark">
+  <div class="col-md-3">
+    <input class="form-control bg-white text-dark border-secondary" placeholder="Filtrar por carrera" [(ngModel)]="filtroCarrera" (ngModelChange)="aplicarFiltros()" />
+  </div>
+  <div class="col-md-3">
+    <input class="form-control bg-white text-dark border-secondary" placeholder="Nombre del curso" [(ngModel)]="filtroNombre" (ngModelChange)="aplicarFiltros()" />
+  </div>
+  <div class="col-md-2">
+    <input class="form-control bg-white text-dark border-secondary" placeholder="Código" [(ngModel)]="filtroCodigo" (ngModelChange)="aplicarFiltros()" />
+  </div>
+  <div class="col-md-2">
+    <select class="form-select bg-white text-dark border-secondary" [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()">
+      <option value="">Todos</option>
+      <option value="activo">Activos</option>
+      <option value="inactivo">Inactivos</option>
+    </select>
+  </div>
+  <div class="col-md-1">
+    <select class="form-select bg-white text-dark border-secondary" [(ngModel)]="filtroCiclo" (ngModelChange)="aplicarFiltros()">
+      <option value="">Ciclo</option>
+      <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
+    </select>
+  </div>
+  <div class="col-md-1">
+    <select class="form-select bg-white text-dark border-secondary" [(ngModel)]="filtroPlan" (ngModelChange)="aplicarFiltros()">
+      <option value="">Plan</option>
+      <option *ngFor="let p of planesEstudio" [value]="p">{{ p }}</option>
+    </select>
+  </div>
+</div>
+
+
+<!-- Tabla de cursos -->
+<div class="table-responsive text-dark">
+  <table class="table table-bordered table-hover table-white align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Carrera</th>
+        <th>Plan</th>
+        <th>Ciclo</th>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Horas</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let curso of filteredCursos; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ obtenerNombreCarrera(curso.carreid) }}</td>
+        <td>{{ curso.plan }}</td>
+        <td>{{ curso.ciclo }}</td>
+        <td>{{ curso.codigo }}</td>
+        <td>{{ curso.nombre }}</td>
+        <td>{{ curso.horas }}</td>
+        <td>
+          <span class="badge" [ngClass]="curso.estado ? 'bg-success' : 'bg-secondary'">
+            {{ curso.estado ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-warning" (click)="abrirModalEditar(curso)">Editar</button>
+          <button class="btn btn-sm btn-outline-danger" (click)="cambiarEstado(curso)">
+            {{ curso.estado ? 'Desactivar' : 'Activar' }}
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>

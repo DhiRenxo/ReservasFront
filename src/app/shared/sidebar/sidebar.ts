@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output,  EventEmitter} from '@angular/core';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { Usuario } from '../../core/models/usuario.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -19,7 +19,9 @@ export class Sidebar implements OnInit {
   usuario!: Usuario;
   roles: Rol[] = [];
 
+  @Output() toggle = new EventEmitter<boolean>();
 
+ 
   menu = [
     { label: 'Análisis', icon: 'fas fa-chart-bar', route: '/analisis' },
     { label: 'Usuarios', icon: 'fas fa-users', route: '/app/usuarios' },
@@ -68,6 +70,11 @@ export class Sidebar implements OnInit {
   obtenerRolTexto(rolid: number): string {
     const rol = this.roles.find(r => r.id === rolid);
     return rol ? rol.nombre : 'Usuario';
+  }
+
+  toggleSidebar() {
+    this.isCollapsed = !this.isCollapsed;
+    this.toggle.emit(this.isCollapsed);
   }
 
 }

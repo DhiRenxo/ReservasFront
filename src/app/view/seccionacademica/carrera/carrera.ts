@@ -19,7 +19,7 @@ export class Carrera implements OnInit {
   currentId: number | null = null;
 
   currentPage = 1;
-  itemsPerPage = 10;
+  itemsPerPage = 6;
   totalPages = 1;
   pages: number[] = [];
 

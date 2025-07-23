@@ -10,5 +10,6 @@ import { Router, RouterOutlet } from '@angular/router';
   styleUrl: './layout.scss'
 })
 export class Layout {
-
+  isSidebarCollapsed = false;
+  constructor() {}
 }

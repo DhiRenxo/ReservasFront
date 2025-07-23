@@ -1,11 +1,16 @@
 /* Estilos para Sidebar */
 .sidebar-container {
+  position: flex;
+  left: 0;
+  top: 0;
   width: 250px;
-  transition: all 0.3s ease;
-  overflow: hidden;
+  height: 100vh;
+  transition: width 0.3s ease;
+  z-index: 1000;
 
   &.collapsed {
     width: 80px;
+  
 
     .user-details {
       display: none;

@@ -1,3 +1,6 @@
+
+<div class="main-container">
+<h2>Gestión Escuelas del IC</h2>
 <div class="formulario">
   <form [formGroup]="carreraForm" (ngSubmit)="enviar()">
     <label for="nombre" class="sr-only">Nombre</label>
@@ -18,7 +21,6 @@
     <div class="icon">{{ c.nomenglatura }}</div>
     <div class="info">
       <h3>{{ c.nombre }}</h3>
-      <small>ID: {{ c.id }}</small>
       <p class="estado" [class.activo]="c.status" [class.inactivo]="!c.status">
          Estado: {{ c.status ? 'Activo' : 'Inactivo' }}
         </p>
@@ -40,3 +42,4 @@
   </button>
 </div>
 
+</div>
