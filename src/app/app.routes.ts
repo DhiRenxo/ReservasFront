@@ -7,6 +7,10 @@ import { DocenteList } from './view/docente/docentelist/docentelist';
 import { Seccion } from './view/seccionacademica/seccion/seccion';
 import { Curso } from './view/seccionacademica/curso/curso';
 import { Carrera } from './view/seccionacademica/carrera/carrera';
+import { Ambiente } from './view/ambiente/ambiente';
+import { AsignacionCreateComponent  } from './view/asignacion/asignacioncreate/asignacioncreate';
+import { Asignaciondocente } from './view/asignacion/asignaciondocente/asignaciondocente';
+import { Asignacionvalidacion } from './view/asignacion/asignacionvalidacion/asignacionvalidacion';
 
 export const routes: Routes = [
   {
@@ -49,7 +53,24 @@ export const routes: Routes = [
       {
         path: 'carrera',
         component: Carrera
+      },
+      {
+        path: 'ambiente',
+        component: Ambiente
+      },
+      {
+        path: 'asignacioncreacion',
+        component: AsignacionCreateComponent, 
+      },
+      {
+        path: 'asignaciondoncente',
+        component: Asignaciondocente
+      },
+      {
+        path: 'asignacionvalidacion',
+        component: Asignacionvalidacion
       }
+
     ]
   },
   {

@@ -7,4 +7,5 @@ export interface CursoModel {
   plan: string;
   carreid: number;
   estado?: boolean; 
+  horasasignadas?: number;
 }

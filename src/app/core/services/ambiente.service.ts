@@ -40,4 +40,13 @@ export class AmbienteService{
     eliminar(id: number): Observable<any>{
         return this.http.delete(`${this.apiUrl}/${id}`, {headers: this.getAuthHeaders()});
     }
+
+    cambiarEstado(id: number, estado: boolean): Observable<AmbienteModel> {
+        return this.http.patch<AmbienteModel>(
+          `${this.apiUrl}/estado/${id}`,
+          { estado },
+    
+          { headers: this.getAuthHeaders() }
+        );
+      }
 }

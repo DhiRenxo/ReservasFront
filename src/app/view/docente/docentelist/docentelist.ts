@@ -4,6 +4,7 @@ import { DocenteService } from '../../../core/services/docente.service';
 import { Docente } from '../../../core/models/docente.model';
 import { RouterModule } from '@angular/router';
 import { DocenteForm } from '../docenteform/docenteform';
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-docente-list',

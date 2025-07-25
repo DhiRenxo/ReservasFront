@@ -1,0 +1,117 @@
+<div class="container mt-4">
+
+  <!-- Alerta de éxito -->
+  <div *ngIf="alerta.tipo === 'success'" class="alert alert-success fade show alerta" role="alert">
+    {{ alerta.mensaje }}
+  </div>
+
+  <!-- Alerta de error -->
+  <div *ngIf="alerta.tipo === 'error'" class="alert alert-danger fade show alerta" role="alert">
+    {{ alerta.mensaje }}
+  </div>
+
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTipoAmbiente">
+    + Nuevo Tipo de Ambiente
+  </button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalTipoAmbiente" tabindex="-1" aria-labelledby="modalTipoAmbienteLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTipoAmbienteLabel">Nuevo Tipo de Ambiente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <form (ngSubmit)="guardarTipoAmbiente()" #formAmbiente="ngForm">
+        <div class="modal-body">
+
+          <!-- Nombre -->
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input
+              type="text"
+              id="nombre"
+              class="form-control"
+              name="nombre"
+              [(ngModel)]="nuevoTipo.nombre"
+              required
+            />
+          </div>
+
+          <!-- Selector de color -->
+<div class="mb-3">
+  <label class="form-label">Color</label>
+
+ <!-- Colores básicos -->
+<div class="d-flex flex-wrap gap-2 mb-2">
+  <button
+    *ngFor="let color of coloresBasicos"
+    type="button"
+    class="color-boton"
+    [ngClass]="{ 'selected-color': color.hex === nuevoTipo.colorhex }"
+    [style.backgroundColor]="color.hex"
+    [title]="color.nombre"
+    (click)="seleccionarColor(color)"
+  ></button>
+</div>
+
+
+
+
+  <!-- Mostrar más colores -->
+  <div class="mb-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="alternarPaleta()">
+      {{ mostrarPaletaExtendida ? 'Ocultar' : 'Mostrar' }} más colores
+    </button>
+  </div>
+
+  <!-- Colores extendidos -->
+<div *ngIf="mostrarPaletaExtendida" class="d-flex flex-wrap gap-2 mb-2">
+  <button
+    *ngFor="let color of coloresExtendidos"
+    type="button"
+    class="color-boton"
+    [ngClass]="{ 'selected-color': color.hex === nuevoTipo.colorhex }"
+    [style.backgroundColor]="color.hex"
+    [title]="color.nombre"
+    (click)="seleccionarColor(color)"
+  ></button>
+</div>
+
+  <!-- Mezclador personalizado -->
+  <div class="mb-2">
+    <label class="form-label small">Elegir color personalizado</label><br />
+    <input
+        name="colorPersonalizado"
+      type="color"
+      class="form-control form-control-color"
+      style="width: 60px; height: 40px; padding: 2px;"
+      [(ngModel)]="colorPersonalizado"
+      (input)="seleccionarColorPersonalizado()"
+    />
+  </div>
+
+  <!-- Vista previa solo para color personalizado -->
+  <div class="mt-2" *ngIf="esColorPersonalizado()">
+    <span class="badge rounded-pill" [style.backgroundColor]="nuevoTipo.colorhex">
+      {{ nuevoTipo.colorhex }}
+    </span>
+  </div>
+</div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success" [disabled]="formAmbiente.invalid || !colorValido">
+            Guardar
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,148 @@
+<div class="container py-4">
+  <h2 class="mb-4">Crear Asignación</h2>
+
+  <form [formGroup]="asignacionForm" (ngSubmit)="guardarAsignacion()" novalidate>
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label">Plan</label>
+        <select class="form-select" formControlName="plan">
+          <option *ngFor="let p of planes" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Ciclo</label>
+        <select class="form-select" formControlName="ciclo">
+          <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Carrera</label>
+        <select class="form-select" formControlName="carreraid">
+          <option [ngValue]="null">Seleccione una carrera</option>
+          <option *ngFor="let carrera of carreras" [value]="carrera.id">{{ carrera.nombre }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="cursoDocenteControls.length > 0" formArrayName="curso_docente">
+      <h5 class="mb-3">Cursos detectados para el ciclo y carrera seleccionados</h5>
+
+      <div
+        *ngFor="let item of cursoDocenteControls; let i = index"
+        [formGroupName]="i"
+        class="card mb-3"
+      >
+        <div class="card-body">
+          <h6 class="card-title">{{ cursos[i].nombre || 'Curso no disponible' }}</h6>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Horas (curso)</label>
+              <input type="number" class="form-control" formControlName="horas" readonly />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Horas Asignadas</label>
+              <input type="number" class="form-control" formControlName="horas_asignadas" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-success w-100 mt-3" type="submit">
+      Guardar Parcial (Paso 1)
+    </button>
+  </form>
+
+  <hr class="my-4" />
+
+<h4 class="mb-3">Asignaciones registradas</h4>
+<div class="table-responsive">
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Carrera</th>
+        <th>Plan</th>
+        <th>Ciclo</th>
+        <th>Secciones</th>
+        <th>Asignadas</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of asignaciones; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ getNombreCarrera(a.carreraid) }}</td>
+        <td>{{ a.plan }}</td>
+        <td>{{ a.ciclo }}</td>
+        <td>{{ a.cantidad_secciones }}</td>
+        <td>{{ a.secciones_asignadas }}</td>
+        <td>{{ a.fecha_asignacion | date: 'short' }}</td>
+        <td>
+          <span [class]="'badge ' + (a.estado ? 'bg-success' : 'bg-danger')">
+            {{ a.estado ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+        <button
+            class="btn btn-primary btn-sm"
+            (click)="mostrarCursos(a.carreraid, a.plan, a.ciclo)"
+        >
+            Listado de Cursos
+        </button>
+        </td>
+
+
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal de Cursos -->
+<div
+  class="modal fade"
+  id="modalCursos"
+  tabindex="-1"
+  aria-labelledby="modalCursosLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCursosLabel">Listado de Cursos por Asignación</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Curso</th>
+              <th>Horas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let curso of cursosFiltrados; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ curso.nombre }}</td>
+              <td>{{ curso.horas }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>

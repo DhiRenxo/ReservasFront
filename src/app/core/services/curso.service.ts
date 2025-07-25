@@ -45,6 +45,23 @@ export class CursoService {
   }
 
   actualizarHoras(id: number, horas: number): Observable<CursoModel> {
-    return this.http.patch<CursoModel>(`${this.apiUrl}/${id}/actualizar-horas/${horas}`, {}, { headers: this.getAuthHeaders() });
+      return this.http.patch<CursoModel>(`${this.apiUrl}/${id}/actualizar-horas/${horas}`, {}, { headers: this.getAuthHeaders() });
+    }
+
+    getByFiltro(carreraid: number, plan: string, ciclo: string): Observable<CursoModel[]> {
+    const params = {
+      carreid: carreraid.toString(),  // Este es el nombre que espera tu backend
+      plan,
+      ciclo
+    };
+
+    console.log('Consulta de cursos con:', params);  // 🔍 Este console.log te ayudará a ver los parámetros enviados
+
+    return this.http.get<CursoModel[]>(`${this.apiUrl}/filtro`, {
+      headers: this.getAuthHeaders(),
+      params
+    });
   }
+
+
 }
