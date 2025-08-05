@@ -78,7 +78,7 @@ export class AsignacionCreateComponent implements OnInit {
       control.push(this.fb.group({
         curso_id: [curso.id],
         horas: [curso.horas],
-        horas_asignadas: [curso.horas]  // editable
+        horas_asignadas: [curso.horas]  
       }));
     });
   }
@@ -97,8 +97,7 @@ export class AsignacionCreateComponent implements OnInit {
 
     this.asignacionService.crear(asignacion).subscribe({
       next: (res) => {
-        console.log('Asignación creada:', res);
-        this.cargarAsignaciones(); // recargar la lista
+        this.cargarAsignaciones(); 
         this.asignacionForm.reset({
           plan: '2023',
           ciclo: '1',
@@ -122,15 +121,11 @@ export class AsignacionCreateComponent implements OnInit {
 
 
   mostrarCursos(carreraid: number, plan: string, ciclo: string): void {
-  // 🪵 Mostrar en consola los valores de la asignación
-  console.log('🟡 Consulta de cursos con:', { carreraid, plan, ciclo });
 
   this.cursoService.getByFiltro(carreraid, plan, ciclo).subscribe({
     next: (data) => {
-      console.log('🟢 Respuesta de cursos:', data); // muestra los cursos traídos
       this.cursosFiltrados = data;
 
-      // Mostrar el modal con Bootstrap
       const modal = new bootstrap.Modal(document.getElementById('modalCursos')!);
       modal.show();
     },
