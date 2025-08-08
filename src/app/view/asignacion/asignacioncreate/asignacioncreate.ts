@@ -38,6 +38,7 @@ export class AsignacionCreateComponent implements OnInit {
     this.asignacionForm = this.fb.group({
       plan: ['2023'],
       ciclo: ['1'],
+      modalidad: ['PRESENCIAL'],
       carreraid: [null],
       curso_docente: this.fb.array([])
     });
@@ -55,8 +56,10 @@ export class AsignacionCreateComponent implements OnInit {
   }
 
   cargarAsignaciones(): void {
-    this.asignacionService.listar().subscribe(asignaciones => this.asignaciones = asignaciones);
-  }
+  this.asignacionService.listar().subscribe(asignaciones => {
+    this.asignaciones = asignaciones;
+  });
+}
 
   filtrarCursos(): void {
     const carreraid = this.asignacionForm.get('carreraid')!.value;
@@ -84,31 +87,37 @@ export class AsignacionCreateComponent implements OnInit {
   }
 
   guardarAsignacion(): void {
-    const formValue = this.asignacionForm.value;
+  const formValue = this.asignacionForm.value;
 
-    const asignacion: AsignacionCreate = {
-      carreraid: formValue.carreraid,
-      plan: formValue.plan,
-      ciclo: formValue.ciclo,
-      cantidad_secciones: formValue.curso_docente.length,
-      secciones_asignadas: formValue.curso_docente.length,
-      curso_ids: formValue.curso_docente.map((cd: any) => cd.curso_id)
-    };
+  const asignacion: AsignacionCreate = {
+    carreraid: formValue.carreraid,
+    plan: formValue.plan,
+    ciclo: formValue.ciclo,
+    modalidad: formValue.modalidad,
+    cantidad_secciones: formValue.curso_docente.length,
+    secciones_asignadas: formValue.curso_docente.length,
+    curso_ids: formValue.curso_docente.map((cd: any) => cd.curso_id)
+  };
 
-    this.asignacionService.crear(asignacion).subscribe({
-      next: (res) => {
-        this.cargarAsignaciones(); 
-        this.asignacionForm.reset({
-          plan: '2023',
-          ciclo: '1',
-          carreraid: null,
-          curso_docente: []
-        });
-        this.cursos = [];
-      },
-      error: (err) => console.error('Error al crear asignación:', err)
-    });
-  }
+  // ✅ Agregar este log para inspeccionar la data antes de enviarla
+  console.log('📤 Enviando asignación al backend:', asignacion);
+
+  this.asignacionService.crear(asignacion).subscribe({
+    next: (res) => {
+      this.cargarAsignaciones(); 
+      this.asignacionForm.reset({
+        plan: '2023',
+        ciclo: '1',
+        carreraid: null,
+        modalidad: 'PRESENCIAL',
+        curso_docente: []
+      });
+      this.cursos = [];
+    },
+    error: (err) => console.error('Error al crear asignación:', err)
+  });
+}
+
 
   getNombreCarrera(id: number): string {
     const carrera = this.carreras.find(c => c.id === id);

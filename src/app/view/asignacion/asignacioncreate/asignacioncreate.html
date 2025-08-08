@@ -26,6 +26,16 @@
       </div>
     </div>
 
+    <div class="col-md-4">
+    <label class="form-label">Modalidad</label>
+    <select class="form-select" formControlName="modalidad">
+      <option value="PRESENCIAL">PRESENCIAL</option>
+      <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
+      <option value="VIRTUAL">VIRTUAL</option>
+    </select>
+  </div>
+
+
     <div *ngIf="cursoDocenteControls.length > 0" formArrayName="curso_docente">
       <h5 class="mb-3">Cursos detectados para el ciclo y carrera seleccionados</h5>
 
@@ -66,6 +76,7 @@
       <tr>
         <th>#</th>
         <th>Carrera</th>
+        <th>Modalidad</th>
         <th>Plan</th>
         <th>Ciclo</th>
         <th>Secciones</th>
@@ -79,6 +90,7 @@
       <tr *ngFor="let a of asignaciones; let i = index">
         <td>{{ i + 1 }}</td>
         <td>{{ getNombreCarrera(a.carreraid) }}</td>
+        <td>{{ a.modalidad }}</td>
         <td>{{ a.plan }}</td>
         <td>{{ a.ciclo }}</td>
         <td>{{ a.cantidad_secciones }}</td>

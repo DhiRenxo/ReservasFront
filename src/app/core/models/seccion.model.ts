@@ -6,6 +6,7 @@ export interface SeccionModel {
     letra: string
     turno: string
     serie: number
+    model: string
     fecha_creacion: string
     fecha_inicio: string
     fecha_fin: string

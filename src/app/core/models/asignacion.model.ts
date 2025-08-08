@@ -5,6 +5,7 @@ export interface AsignacionBase {
   carreraid: number;
   plan: string;
   ciclo: string;
+  modalidad: string;
   cantidad_secciones: number;
   secciones_asignadas: number;
   estado?: boolean;

@@ -1,1 +1,54 @@
-<p>asignaciondocente works!</p>
+<div class="container mt-4" *ngIf="!loading; else cargando">
+  <h3>Asignación de docentes</h3>
+
+  <div *ngFor="let asig of asignaciones" class="mb-5 border p-3 rounded shadow-sm">
+    <h5>
+      Asignación #{{ asig.id }}  
+      <small class="text-muted">({{ asig.fecha_asignacion | date:'short' }})</small>
+    </h5>
+    <p>
+      <strong>Carrera:</strong> {{ asig.carreraid }} |
+      <strong>Plan:</strong> {{ asig.plan }} |
+      <strong>Ciclo:</strong> {{ asig.ciclo }}
+    </p>
+
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Curso</th>
+          <th>Horas</th>
+          <th>Docente asignado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let curso of asig.cursos; let i = index">
+          <td>{{ curso.nombre }}</td>
+          <td>{{ curso.horas }}</td>
+          <td *ngIf="asig.docentes && asig.docentes[i]">
+            <select
+              class="form-select"
+              [(ngModel)]="asig.docentes[i].id"
+              name="docente{{ asig.id }}_{{ i }}"
+            >
+              <option value="0">-- Seleccione docente --</option>
+              <option *ngFor="let doc of docentes" [value]="doc.id">
+                {{ doc.nombre }}
+              </option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="btn btn-primary mt-2" (click)="guardarCambios(asig)">
+      Guardar cambios
+    </button>
+  </div>
+</div>
+
+<ng-template #cargando>
+  <div class="text-center mt-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2">Cargando datos...</p>
+  </div>
+</ng-template>
