@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AsignacionService } from '../../../core/services/asignacion.service';
 import { DocenteService } from '../../../core/services/docente.service';
+import { CursoService } from '../../../core/services/curso.service';
 import { Asignacion, AsignacionUpdate } from '../../../core/models/asignacion.model';
 import { Docente } from '../../../core/models/docente.model';
 
@@ -15,6 +16,7 @@ import { Docente } from '../../../core/models/docente.model';
 export class Asignaciondocente implements OnInit {
   private asignacionService = inject(AsignacionService);
   private docenteService = inject(DocenteService);
+  private cursoService = inject(CursoService);
 
   asignaciones: Asignacion[] = [];
   docentes: Docente[] = [];
@@ -25,11 +27,18 @@ export class Asignaciondocente implements OnInit {
       this.asignacionService.listar().toPromise(),
       this.docenteService.listar().toPromise()
     ])
-    .then(([asignaciones, docentes]) => {
+    .then(async ([asignaciones, docentes]) => {
       this.docentes = docentes || [];
 
-      // Inicializamos docentes por cada asignación y curso
-      this.asignaciones = (asignaciones || []).map(asig => {
+      // Traer cursos filtrados para cada asignación
+      for (const asig of asignaciones || []) {
+        const cursos = await this.cursoService
+          .getByFiltro(asig.carreraid, asig.plan, asig.ciclo)
+          .toPromise();
+
+        asig.cursos = cursos || [];
+
+        // Inicializar docentes por cada curso
         if (!asig.docentes) {
           asig.docentes = [];
         }
@@ -46,9 +55,9 @@ export class Asignaciondocente implements OnInit {
             });
           }
         }
-        return asig;
-      });
+      }
 
+      this.asignaciones = asignaciones || [];
       this.loading = false;
     })
     .catch(err => {
@@ -80,4 +89,54 @@ export class Asignaciondocente implements OnInit {
       }
     });
   }
+
+  /**
+   * Evento que se dispara al cambiar el docente en el select
+   */
+  onDocenteChange(asig: Asignacion, index: number) {
+    // Nos aseguramos que asig.docentes esté inicializado
+    if (!asig.docentes) {
+      asig.docentes = [];
+    }
+
+    // Si la posición no existe, la inicializamos
+    if (!asig.docentes[index]) {
+      asig.docentes[index] = {
+        id: 0,
+        nombre: '',
+        codigo: '',
+        estado: true,
+        tipocontrato: '',
+        horassemanal: 0,
+        horasactual: 0,
+      };
+    }
+
+    const docenteId = asig.docentes[index].id;
+    console.log(`Fila ${index}: ID de docente seleccionado ->`, docenteId);
+
+    if (docenteId && docenteId > 0) {
+      this.docenteService.obtener(docenteId).subscribe({
+        next: (docente) => {
+          console.log(
+            `Fila ${index}: Docente encontrado ->`,
+            docente.nombre,
+            '| Horas semanales ->',
+            docente.horassemanal,
+            '| Horas actual ->',
+            docente.horasactual
+          );
+          asig.docentes![index].horassemanal = docente.horassemanal;
+          asig.docentes![index].horasactual = docente.horasactual ?? 0; // con ! porque ya validamos
+        },
+        error: (err) => {
+          console.error(`Fila ${index}: Error obteniendo docente`, err);
+        }
+      });
+    } else {
+      asig.docentes![index].horassemanal = 0;
+      asig.docentes![index].horasactual = 0; // también seguro
+    }
+  }
+
 }

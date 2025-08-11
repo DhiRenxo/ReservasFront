@@ -18,6 +18,8 @@
           <th>Curso</th>
           <th>Horas</th>
           <th>Docente asignado</th>
+          <th>Horas Docente</th>
+          <th>Horas Actuales</th>
         </tr>
       </thead>
       <tbody>
@@ -29,6 +31,7 @@
               class="form-select"
               [(ngModel)]="asig.docentes[i].id"
               name="docente{{ asig.id }}_{{ i }}"
+              (change)="onDocenteChange(asig, i)"
             >
               <option value="0">-- Seleccione docente --</option>
               <option *ngFor="let doc of docentes" [value]="doc.id">
@@ -36,6 +39,8 @@
               </option>
             </select>
           </td>
+          <td>{{ (asig.docentes && asig.docentes[i].horassemanal) || 0 }}</td>
+          <td>{{ (asig.docentes && asig.docentes[i].horasactual) || 0 }}</td>
         </tr>
       </tbody>
     </table>
