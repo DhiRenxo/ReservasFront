@@ -8,6 +8,7 @@ export interface AsignacionBase {
   modalidad: string;
   cantidad_secciones: number;
   secciones_asignadas: number;
+  fecha_inicio: string;
   estado?: boolean;
 }
 
@@ -31,8 +32,10 @@ export interface AsignacionDelete {
 
 export interface Asignacion extends AsignacionBase {
   id: number;
-  fecha_asignacion: string;         // ISO string
+  fecha_asignacion: string;         
   fecha_modificada?: string;
-  cursos?: CursoModel[];            // Anidado desde el backend
-  docentes?: Docente[];             // Anidado desde el backend
+  cursos?: CursoModel[];           
+  docentes?: Docente[];             
 }
+
+

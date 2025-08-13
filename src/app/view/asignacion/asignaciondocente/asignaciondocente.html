@@ -1,51 +1,88 @@
-<div class="container mt-4" *ngIf="!loading; else cargando">
+<div class="container mt-4" *ngIf="!loading && asignaciones.length > 0; else cargando">
   <h3>Asignación de docentes</h3>
 
-  <div *ngFor="let asig of asignaciones" class="mb-5 border p-3 rounded shadow-sm">
+  <!-- Navegación -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <button class="btn btn-outline-primary" (click)="anterior()" [disabled]="currentIndex === 0">
+      &larr;
+      {{ currentIndex > 0 ? getCarreraNombre(asignaciones[currentIndex - 1].carreraid) : '' }}
+    </button>
+
+    <strong class="fs-5">
+      Carrera: {{ asignacionActual ? getCarreraNombre(asignacionActual.carreraid) : '' }}
+    </strong>
+
+    <button class="btn btn-outline-primary" (click)="siguiente()" [disabled]="currentIndex === asignaciones.length - 1">
+      {{ currentIndex < asignaciones.length - 1 ? getCarreraNombre(asignaciones[currentIndex + 1].carreraid) : '' }}
+      &rarr;
+    </button>
+  </div>
+
+  <!-- Cuadro de asignación -->
+  <div class="border p-3 rounded shadow-sm" *ngIf="asignacionActual">
     <h5>
-      Asignación #{{ asig.id }}  
-      <small class="text-muted">({{ asig.fecha_asignacion | date:'short' }})</small>
+      Asignación #{{ asignacionActual.id }}
+      <small class="text-muted">({{ asignacionActual.fecha_asignacion | date:'short' }})</small>
     </h5>
-    <p>
-      <strong>Carrera:</strong> {{ asig.carreraid }} |
-      <strong>Plan:</strong> {{ asig.plan }} |
-      <strong>Ciclo:</strong> {{ asig.ciclo }}
+    <p class="d-flex align-items-center gap-3 flex-wrap">
+      <span><strong>Plan:</strong> {{ asignacionActual.plan }}</span>
+      <span><strong>Ciclo:</strong> {{ asignacionActual.ciclo }}</span>
+      <span class="d-flex align-items-center">
+        <strong class="me-2">Cantidad de secciones:</strong>
+        <input type="number" class="form-control form-control-sm w-auto"
+               [(ngModel)]="asignacionActual.cantidad_secciones" min="1" />
+        <button class="btn btn-sm btn-success ms-2" (click)="guardarCantidadSecciones(asignacionActual)">
+          Guardar
+        </button>
+      </span>
     </p>
 
-    <table class="table table-bordered table-hover">
+    <!-- Tabla -->
+    <table class="table table-bordered table-hover"
+          *ngIf="asignacionActual && asignacionActual.cursos?.length && asignacionActual.docentes?.length; else cargarCursosMsg">
       <thead class="table-light">
         <tr>
           <th>Curso</th>
           <th>Horas</th>
+          <th>Sección</th>
           <th>Docente asignado</th>
           <th>Horas Docente</th>
           <th>Horas Actuales</th>
+          <th>Horas Temporales</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let curso of asig.cursos; let i = index">
-          <td>{{ curso.nombre }}</td>
-          <td>{{ curso.horas }}</td>
-          <td *ngIf="asig.docentes && asig.docentes[i]">
-            <select
-              class="form-select"
-              [(ngModel)]="asig.docentes[i].id"
-              name="docente{{ asig.id }}_{{ i }}"
-              (change)="onDocenteChange(asig, i)"
-            >
-              <option value="0">-- Seleccione docente --</option>
-              <option *ngFor="let doc of docentes" [value]="doc.id">
-                {{ doc.nombre }}
-              </option>
-            </select>
-          </td>
-          <td>{{ (asig.docentes && asig.docentes[i].horassemanal) || 0 }}</td>
-          <td>{{ (asig.docentes && asig.docentes[i].horasactual) || 0 }}</td>
-        </tr>
+        <ng-container *ngFor="let curso of asignacionActual!.cursos; let ci = index">
+          <tr *ngFor="let sec of [].constructor(asignacionActual!.cantidad_secciones); let si = index">
+            <td>{{ curso.nombre }}</td>
+            <td>{{ curso.horas }}</td>
+            <td>Sección {{ si + 1 }}</td>
+            <td>
+              <select class="form-select"
+                      [(ngModel)]="asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].id"
+                      (change)="onDocenteChange(asignacionActual!, ci * asignacionActual!.cantidad_secciones + si)">
+                <option value="0">-- Seleccione docente --</option>
+                <option *ngFor="let doc of docentes" [value]="doc.id">{{ doc.nombre }}</option>
+              </select>
+            </td>
+            <td>{{ asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].horassemanal || 0 }}</td>
+            <td>{{ asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].horasactual || 0 }}</td>
+            <td>{{ asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].horastemporales || 0 }}</td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
 
-    <button class="btn btn-primary mt-2" (click)="guardarCambios(asig)">
+
+    <ng-template #cargarCursosMsg>
+      <div class="text-center p-3">
+        <button class="btn btn-sm btn-secondary" (click)="cargarCursos(asignacionActual)">
+          Cargar cursos
+        </button>
+      </div>
+    </ng-template>
+
+    <button class="btn btn-primary mt-2" (click)="guardarCambios(asignacionActual)">
       Guardar cambios
     </button>
   </div>

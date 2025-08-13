@@ -40,6 +40,7 @@ export class AsignacionCreateComponent implements OnInit {
       ciclo: ['1'],
       modalidad: ['PRESENCIAL'],
       carreraid: [null],
+      fecha_inicio: [null],
       curso_docente: this.fb.array([])
     });
 
@@ -94,6 +95,7 @@ export class AsignacionCreateComponent implements OnInit {
     plan: formValue.plan,
     ciclo: formValue.ciclo,
     modalidad: formValue.modalidad,
+    fecha_inicio: formValue.fecha_inicio,
     cantidad_secciones: formValue.curso_docente.length,
     secciones_asignadas: formValue.curso_docente.length,
     curso_ids: formValue.curso_docente.map((cd: any) => cd.curso_id)
@@ -110,6 +112,7 @@ export class AsignacionCreateComponent implements OnInit {
         ciclo: '1',
         carreraid: null,
         modalidad: 'PRESENCIAL',
+        fecha_inicio: null,
         curso_docente: []
       });
       this.cursos = [];

@@ -25,6 +25,11 @@
         </select>
       </div>
     </div>
+    <div class="col-md-4">
+      <label class="form-label">Fecha de Inicio</label>
+      <input type="date" class="form-control" formControlName="fecha_inicio" />
+    </div>
+
 
     <div class="col-md-4">
     <label class="form-label">Modalidad</label>
@@ -81,7 +86,8 @@
         <th>Ciclo</th>
         <th>Secciones</th>
         <th>Asignadas</th>
-        <th>Fecha</th>
+        <th>F.Creacion</th>
+        <th>F.Inicio</th>
         <th>Estado</th>
         <th>Acciones</th>
       </tr>
@@ -96,6 +102,7 @@
         <td>{{ a.cantidad_secciones }}</td>
         <td>{{ a.secciones_asignadas }}</td>
         <td>{{ a.fecha_asignacion | date: 'short' }}</td>
+        <td>{{ a.fecha_inicio | date: 'short'}}</td>
         <td>
           <span [class]="'badge ' + (a.estado ? 'bg-success' : 'bg-danger')">
             {{ a.estado ? 'Activo' : 'Inactivo' }}

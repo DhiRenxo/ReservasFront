@@ -61,6 +61,15 @@ export class AsignacionService {
     });
   }
 
+  // Actualizar solo cantidad de secciones
+    actualizarCantidadSecciones(id: number, data: { cantidad_secciones: number }): Observable<Asignacion> {
+      return this.http.patch<Asignacion>(
+        `${this.apiUrl}/${id}/cantidad-secciones`,
+        data,
+        { headers: this.getAuthHeaders() }
+      );
+  }     
+
   // Eliminar (desactivar)
   eliminar(data: AsignacionDelete): Observable<{ mensaje: string }> {
     return this.http.delete<{ mensaje: string }>(this.apiUrl, {
