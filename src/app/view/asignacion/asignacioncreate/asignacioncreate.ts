@@ -24,7 +24,7 @@ export class AsignacionCreateComponent implements OnInit {
   asignacionForm!: FormGroup;
   cursosFiltrados: CursoModel[] = [];
 
-  planes = ['2023', '2019'];
+  planes = ['2024','2023', '2019'];
   ciclos = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
   constructor(
@@ -36,7 +36,7 @@ export class AsignacionCreateComponent implements OnInit {
 
   ngOnInit(): void {
     this.asignacionForm = this.fb.group({
-      plan: ['2023'],
+      plan: ['2024'],
       ciclo: ['1'],
       modalidad: ['PRESENCIAL'],
       carreraid: [null],
@@ -90,25 +90,33 @@ export class AsignacionCreateComponent implements OnInit {
   guardarAsignacion(): void {
   const formValue = this.asignacionForm.value;
 
+  // Formatear fecha_inicio en formato ISO 8601 (si existe)
+  let fechaISO = null;
+  if (formValue.fecha_inicio) {
+    fechaISO = new Date(formValue.fecha_inicio).toISOString();
+  }
+
   const asignacion: AsignacionCreate = {
     carreraid: formValue.carreraid,
     plan: formValue.plan,
     ciclo: formValue.ciclo,
     modalidad: formValue.modalidad,
-    fecha_inicio: formValue.fecha_inicio,
+    fecha_inicio: fechaISO,
     cantidad_secciones: formValue.curso_docente.length,
     secciones_asignadas: formValue.curso_docente.length,
     curso_ids: formValue.curso_docente.map((cd: any) => cd.curso_id)
   };
 
-  // ✅ Agregar este log para inspeccionar la data antes de enviarla
-  console.log('📤 Enviando asignación al backend:', asignacion);
+  // 🚀 Log detallado
+  console.log("📋 Form value crudo:", formValue);
+  console.log("📦 Objeto AsignacionCreate a enviar:", asignacion);
+  console.log("📤 JSON final enviado al backend:", JSON.stringify(asignacion));
 
   this.asignacionService.crear(asignacion).subscribe({
     next: (res) => {
-      this.cargarAsignaciones(); 
+      this.cargarAsignaciones();
       this.asignacionForm.reset({
-        plan: '2023',
+        plan: '2024',
         ciclo: '1',
         carreraid: null,
         modalidad: 'PRESENCIAL',
@@ -117,7 +125,12 @@ export class AsignacionCreateComponent implements OnInit {
       });
       this.cursos = [];
     },
-    error: (err) => console.error('Error al crear asignación:', err)
+    error: (err) => {
+      console.error("❌ Error al crear asignación:", err);
+      if (err.error && err.error.detail) {
+        console.error("🛠 Detalle de error del backend:", err.error.detail);
+      }
+    }
   });
 }
 
@@ -132,14 +145,20 @@ export class AsignacionCreateComponent implements OnInit {
   }
 
 
-  mostrarCursos(carreraid: number, plan: string, ciclo: string): void {
+mostrarCursos(carreraid: number, plan: string, ciclo: string): void {
+  const modalidad = this.asignacionForm.get('modalidad')?.value;
 
-  this.cursoService.getByFiltro(carreraid, plan, ciclo).subscribe({
+  this.cursoService.getByFiltro(carreraid, plan, ciclo, modalidad).subscribe({
     next: (data) => {
       this.cursosFiltrados = data;
 
-      const modal = new bootstrap.Modal(document.getElementById('modalCursos')!);
-      modal.show();
+      // Mostrar el modal solo si hay resultados
+      if (this.cursosFiltrados.length > 0) {
+        const modal = new bootstrap.Modal(document.getElementById('modalCursos')!);
+        modal.show();
+      } else {
+        alert('No se encontraron cursos para los filtros seleccionados.');
+      }
     },
     error: (err) => {
       console.error('🔴 Error al cargar cursos:', err);

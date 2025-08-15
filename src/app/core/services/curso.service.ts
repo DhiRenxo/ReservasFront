@@ -48,17 +48,18 @@ export class CursoService {
       return this.http.patch<CursoModel>(`${this.apiUrl}/${id}/actualizar-horas/${horas}`, {}, { headers: this.getAuthHeaders() });
     }
 
-    getByFiltro(carreraid: number, plan: string, ciclo: string): Observable<CursoModel[]> {
-    const params = {
-      carreid: carreraid.toString(),  
-      plan,
-      ciclo
-    };
-    return this.http.get<CursoModel[]>(`${this.apiUrl}/filtro`, {
-      headers: this.getAuthHeaders(),
-      params
-    });
-  }
+  getByFiltro(carreraid: number, plan: string, ciclo: string, modalidad: string): Observable<CursoModel[]> {
+  const params = {
+    carreid: carreraid.toString(),
+    plan,
+    ciclo,
+    modalidad
+  };
+  return this.http.get<CursoModel[]>(`${this.apiUrl}/filtro`, {
+    headers: this.getAuthHeaders(),
+    params
+  });
+}
 
 
 }

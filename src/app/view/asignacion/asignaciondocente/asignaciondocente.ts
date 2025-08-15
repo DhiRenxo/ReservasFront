@@ -57,18 +57,18 @@ export class Asignaciondocente implements OnInit {
   }
 
   cargarCursos(asig: Asignacion) {
-    // Evitar recarga si ya están
-    if (asig.cursos && asig.cursos.length > 0) {
-      this.ajustarDocentes(asig);
-      return;
-    }
-
-    this.cursoService.getByFiltro(asig.carreraid, asig.plan, asig.ciclo)
-      .subscribe(cursos => {
-        asig.cursos = cursos || [];
-        this.ajustarDocentes(asig);
-      });
+  if (asig.cursos && asig.cursos.length > 0) {
+    this.ajustarDocentes(asig);
+    return;
   }
+
+  this.cursoService.getByFiltro(asig.carreraid, asig.plan, asig.ciclo, asig.modalidad)
+    .subscribe(cursos => {
+      asig.cursos = cursos || [];
+      this.ajustarDocentes(asig);
+    });
+}
+
 
   private ajustarDocentes(asig: Asignacion) {
     const totalSlots = (asig.cursos?.length || 0) * (asig.cantidad_secciones || 1);
@@ -182,4 +182,20 @@ export class Asignaciondocente implements OnInit {
       this.cargarCursos(this.asignacionActual!);
     }
   }
+
+  getDocente(ci: number, si: number) {
+  return this.asignacionActual?.docentes?.[ci * (this.asignacionActual?.cantidad_secciones || 0) + si];
+}
+
+getDocenteId(ci: number, si: number): number {
+  return this.getDocente(ci, si)?.id || 0;
+}
+
+setDocenteId(ci: number, si: number, id: number) {
+  const docente = this.getDocente(ci, si);
+  if (docente) {
+    docente.id = id;
+  }
+}
+
 }

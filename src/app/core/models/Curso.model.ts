@@ -1,6 +1,7 @@
 export interface CursoModel {
   id?: number;
   codigo: string;
+  modalidad: string;
   nombre: string;
   horas: number;
   ciclo: string;

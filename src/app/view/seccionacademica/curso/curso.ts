@@ -46,6 +46,7 @@ export class Curso implements OnInit {
   ngOnInit(): void {
     this.formCurso = this.fb.group({
       carreid: [null, Validators.required],
+      modalidad: [''],
       ciclo: ['', Validators.required],
       plan: ['', Validators.required],
       codigo: ['', Validators.required],
@@ -59,6 +60,7 @@ export class Curso implements OnInit {
     this.formEditarCurso = this.fb.group({
       id: [null],
       carreid: [null, Validators.required],
+      modalidad: [''],
       ciclo: ['', Validators.required],
       plan: ['', Validators.required],
       codigo: ['', Validators.required],

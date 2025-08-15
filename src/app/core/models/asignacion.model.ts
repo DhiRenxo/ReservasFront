@@ -8,7 +8,7 @@ export interface AsignacionBase {
   modalidad: string;
   cantidad_secciones: number;
   secciones_asignadas: number;
-  fecha_inicio: string;
+  fecha_inicio: string | null;
   estado?: boolean;
 }
 

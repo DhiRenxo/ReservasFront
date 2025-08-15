@@ -39,7 +39,9 @@
 
     <!-- Tabla -->
     <table class="table table-bordered table-hover"
-          *ngIf="asignacionActual && asignacionActual.cursos?.length && asignacionActual.docentes?.length; else cargarCursosMsg">
+      *ngIf="(asignacionActual?.cursos?.length || 0) > 0 &&
+             (asignacionActual?.docentes?.length || 0) === (asignacionActual?.cursos?.length || 0) * (asignacionActual?.cantidad_secciones || 0);
+             else cargarCursosMsg">
       <thead class="table-light">
         <tr>
           <th>Curso</th>
@@ -52,27 +54,29 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let curso of asignacionActual!.cursos; let ci = index">
-          <tr *ngFor="let sec of [].constructor(asignacionActual!.cantidad_secciones); let si = index">
+        <ng-container *ngFor="let curso of asignacionActual?.cursos; let ci = index">
+          <tr *ngFor="let sec of [].constructor(asignacionActual?.cantidad_secciones || 0); let si = index">
             <td>{{ curso.nombre }}</td>
             <td>{{ curso.horas }}</td>
             <td>Sección {{ si + 1 }}</td>
             <td>
               <select class="form-select"
-                      [(ngModel)]="asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].id"
-                      (change)="onDocenteChange(asignacionActual!, ci * asignacionActual!.cantidad_secciones + si)">
+                [ngModel]="getDocenteId(ci, si)"
+                (ngModelChange)="
+                  setDocenteId(ci, si, $event);
+                  onDocenteChange(asignacionActual!, ci * (asignacionActual.cantidad_secciones || 0) + si)
+                ">
                 <option value="0">-- Seleccione docente --</option>
                 <option *ngFor="let doc of docentes" [value]="doc.id">{{ doc.nombre }}</option>
               </select>
             </td>
-            <td>{{ asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].horassemanal || 0 }}</td>
-            <td>{{ asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].horasactual || 0 }}</td>
-            <td>{{ asignacionActual!.docentes![ci * asignacionActual!.cantidad_secciones + si].horastemporales || 0 }}</td>
+            <td>{{ getDocente(ci, si)?.horassemanal || 0 }}</td>
+            <td>{{ getDocente(ci, si)?.horasactual || 0 }}</td>
+            <td>{{ getDocente(ci, si)?.horastemporales || 0 }}</td>
           </tr>
         </ng-container>
       </tbody>
     </table>
-
 
     <ng-template #cargarCursosMsg>
       <div class="text-center p-3">
