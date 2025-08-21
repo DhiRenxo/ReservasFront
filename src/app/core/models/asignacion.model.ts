@@ -1,4 +1,5 @@
-// src/app/models/asignacion.model.ts
+import { Docente } from '../models/docente.model';
+
 
 export interface AsignacionBase {
   carreraid: number;
@@ -8,7 +9,8 @@ export interface AsignacionBase {
   cantidad_secciones: number;
   secciones_asignadas?: number;
   estado?: boolean;
-  fecha_inicio?: Date;
+  fecha_inicio?: string | null;
+
 }
 
 export interface AsignacionCreate extends AsignacionBase {}
@@ -20,7 +22,8 @@ export interface AsignacionUpdate {
   cantidad_secciones?: number;
   secciones_asignadas?: number;
   estado?: boolean;
-  fecha_inicio?: Date;
+  fecha_inicio?: string | null;
+
 }
 
 export interface AsignacionUpdateSecciones {
@@ -33,11 +36,10 @@ export interface AsignacionUpdateEstado {
 
 export interface AsignacionResponse extends AsignacionBase {
   id: number;
-  fecha_asignacion: Date;
-  fecha_modificada: Date;
+  fecha_asignacion: string;
+  fecha_modificada: string;
 }
 
-// -------- Relación AsignaciónCursoDocente --------
 export interface AsignacionCursoDocenteBase {
   asignacion_id: number;
   curso_id: number;
@@ -49,3 +51,13 @@ export interface AsignacionCursoDocenteCreate extends AsignacionCursoDocenteBase
 export interface AsignacionCursoDocenteResponse extends AsignacionCursoDocenteBase {
   id: number;
 }
+
+export interface DocenteUpdate {
+  curso_id: number;
+  docente_id: number;
+}
+
+export interface CursosUpdate {
+  curso_ids: number[]; 
+}
+

@@ -9,7 +9,9 @@ import {
   AsignacionUpdateSecciones,
   AsignacionUpdateEstado,
   AsignacionCursoDocenteCreate,
-  AsignacionCursoDocenteResponse
+  AsignacionCursoDocenteResponse,
+  CursosUpdate,
+  DocenteUpdate
 } from '../models/asignacion.model';
 
 @Injectable({
@@ -28,9 +30,6 @@ export class AsignacionService {
     });
   }
 
-  // -----------------------
-  // CRUD Asignaciones
-  // -----------------------
 
   create(asignacion: AsignacionCreate): Observable<AsignacionResponse> {
     return this.http.post<AsignacionResponse>(this.apiUrl, asignacion, {
@@ -74,10 +73,6 @@ export class AsignacionService {
     });
   }
 
-  // -----------------------
-  // Relación Asignacion - Curso - Docente
-  // -----------------------
-
   addRelacion(relacion: AsignacionCursoDocenteCreate): Observable<AsignacionCursoDocenteResponse> {
     return this.http.post<AsignacionCursoDocenteResponse>(`${this.apiUrl}/relacion`, relacion, {
       headers: this.getAuthHeaders()
@@ -89,4 +84,22 @@ export class AsignacionService {
       headers: this.getAuthHeaders()
     });
   }
+
+  actualizarCursos(asignacionId: number, cursos: CursosUpdate): Observable<AsignacionCursoDocenteResponse[]> {
+    return this.http.patch<AsignacionCursoDocenteResponse[]>(
+      `${this.apiUrl}/${asignacionId}/cursos`,
+      cursos,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  actualizarDocenteCurso(asignacionId: number, data: { curso_id: number; docente_id: number }): Observable<AsignacionCursoDocenteResponse> {
+    return this.http.patch<AsignacionCursoDocenteResponse>(
+      `${this.apiUrl}/${asignacionId}/relaciones/docente`,
+      data,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+
 }

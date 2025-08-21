@@ -10,3 +10,7 @@ export interface CursoModel {
   estado?: boolean; 
   horasasignadas?: number;
 }
+
+interface CursoModal extends CursoModel {
+  selected: boolean;
+}

@@ -1,0 +1,57 @@
+<div *ngFor="let asig of asignaciones" class="card my-3 shadow-sm border-0">
+  <div class="card-body">
+    <h5 class="card-title fw-bold text-primary">
+      Plan: {{ asig.plan }} | Ciclo: {{ asig.ciclo }} | Modalidad: {{ asig.modalidad }}
+    </h5>
+    <p class="card-text text-muted mb-2">
+      Carrera ID: <span class="fw-semibold">{{ asig.carreraid }}</span> |
+      Secciones: <span class="fw-semibold">{{ asig.cantidad_secciones }}</span>
+    </p>
+
+    <button class="btn btn-outline-primary btn-sm" (click)="cargarCursos(asig)">
+      <i class="bi bi-eye"></i> Ver Cursos Relacionados
+    </button>
+
+    <div *ngIf="tieneCursos(asig.id); else noCursos" class="table-responsive mt-3">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Curso</th>
+            <th>Horas Curso</th>
+            <th>Docente</th>
+            <th>Horas Actual</th>
+            <th>Horas Temporales</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let curso of cursosPorAsignacion[asig.id]; let i = index">
+            <td>{{ curso.nombreCurso }}</td>
+            <td class="text-center">{{ curso.horas }}</td>
+            <td>
+              <select class="form-select form-select-sm"
+                      [(ngModel)]="seleccion[curso.curso_id + '_' + i]"
+                      (change)="seleccionarDocente(curso.curso_id + '_' + i, seleccion[curso.curso_id + '_' + i] || null, curso)">
+                <option [ngValue]="null">-- Seleccionar --</option>
+                <option *ngFor="let d of docentes" [ngValue]="d.id">{{ d.nombre }}</option>
+              </select>
+            </td>
+            <td class="text-center">{{ curso.docente?.horasactual || 0 }}</td>
+            <td class="text-center">{{ curso.docente?.horastemporales || 0 }}</td>
+            <td class="text-center">
+              <button class="btn btn-success btn-sm" 
+                      (click)="guardarDocente(curso, i)"
+                      [disabled]="!seleccion[curso.curso_id + '_' + i]">
+                <i class="bi bi-save"></i> Guardar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #noCursos>
+      <p class="text-muted mt-3">No tiene ningún curso guardado</p>
+    </ng-template>
+  </div>
+</div>
