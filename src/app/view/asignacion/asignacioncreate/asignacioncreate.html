@@ -1,167 +1,81 @@
-<div class="container py-4">
-  <h2 class="mb-4">Crear Asignación</h2>
+<div class="container mt-4">
+  <h3>Gestión de Asignaciones</h3>
 
-  <form [formGroup]="asignacionForm" (ngSubmit)="guardarAsignacion()" novalidate>
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label class="form-label">Plan</label>
-        <select class="form-select" formControlName="plan">
-          <option *ngFor="let p of planes" [value]="p">{{ p }}</option>
-        </select>
-      </div>
+  <!-- Formulario -->
+  <form (ngSubmit)="editMode ? updateAsignacion() : createAsignacion()" class="mb-4">
 
-      <div class="col-md-4">
-        <label class="form-label">Ciclo</label>
-        <select class="form-select" formControlName="ciclo">
-          <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
-        </select>
-      </div>
-
-      <div class="col-md-4">
-        <label class="form-label">Carrera</label>
-        <select class="form-select" formControlName="carreraid">
-          <option [ngValue]="null">Seleccione una carrera</option>
-          <option *ngFor="let carrera of carreras" [value]="carrera.id">{{ carrera.nombre }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Fecha de Inicio</label>
-      <input type="date" class="form-control" formControlName="fecha_inicio" />
+    <div class="mb-2">
+      <label>Carrera ID:</label>
+      <input type="number" [(ngModel)]="asignacion.carreraid" name="carreraid" class="form-control" required>
     </div>
 
-
-    <div class="col-md-4">
-    <label class="form-label">Modalidad</label>
-    <select class="form-select" formControlName="modalidad">
-      <option value="PRESENCIAL">PRESENCIAL</option>
-      <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
-      <option value="DISTANCIA">DISTANCIA</option>
-    </select>
-  </div>
-
-
-    <div *ngIf="cursoDocenteControls.length > 0" formArrayName="curso_docente">
-      <h5 class="mb-3">Cursos detectados para el ciclo y carrera seleccionados</h5>
-
-      <div
-        *ngFor="let item of cursoDocenteControls; let i = index"
-        [formGroupName]="i"
-        class="card mb-3"
-      >
-        <div class="card-body">
-          <h6 class="card-title">{{ cursos[i].nombre || 'Curso no disponible' }}</h6>
-
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Horas (curso)</label>
-              <input type="number" class="form-control" formControlName="horas" readonly />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Horas Asignadas</label>
-              <input type="number" class="form-control" formControlName="horas_asignadas" />
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="mb-2">
+      <label>Plan:</label>
+      <input type="text" [(ngModel)]="asignacion.plan" name="plan" class="form-control" required>
     </div>
 
-    <button class="btn btn-success w-100 mt-3" type="submit">
-      Guardar Parcial (Paso 1)
+    <div class="mb-2">
+      <label>Ciclo:</label>
+      <input type="text" [(ngModel)]="asignacion.ciclo" name="ciclo" class="form-control" required>
+    </div>
+
+    <div class="mb-2">
+      <label>Modalidad:</label>
+      <select [(ngModel)]="asignacion.modalidad" name="modalidad" class="form-control">
+        <option value="PRESENCIAL">Presencial</option>
+        <option value="VIRTUAL">Virtual</option>
+        <option value="MIXTA">Mixta</option>
+      </select>
+    </div>
+
+    <div class="mb-2">
+      <label>Cantidad de Secciones:</label>
+      <input type="number" [(ngModel)]="asignacion.cantidad_secciones" name="cantidad_secciones" class="form-control">
+    </div>
+
+    <div class="form-check mb-2">
+      <input type="checkbox" [(ngModel)]="asignacion.estado" name="estado" class="form-check-input">
+      <label class="form-check-label">Activo</label>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+      {{ editMode ? 'Actualizar' : 'Crear' }}
     </button>
+    <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Cancelar</button>
   </form>
 
-  <hr class="my-4" />
-
-<h4 class="mb-3">Asignaciones registradas</h4>
-<div class="table-responsive">
-  <table class="table table-bordered table-striped">
-    <thead class="table-dark">
+  <!-- Tabla -->
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
       <tr>
-        <th>#</th>
+        <th>ID</th>
         <th>Carrera</th>
-        <th>Modalidad</th>
         <th>Plan</th>
         <th>Ciclo</th>
+        <th>Modalidad</th>
         <th>Secciones</th>
-        <th>Asignadas</th>
-        <th>F.Creacion</th>
-        <th>F.Inicio</th>
         <th>Estado</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let a of asignaciones; let i = index">
-        <td>{{ i + 1 }}</td>
-        <td>{{ getNombreCarrera(a.carreraid) }}</td>
-        <td>{{ a.modalidad }}</td>
-        <td>{{ a.plan }}</td>
-        <td>{{ a.ciclo }}</td>
-        <td>{{ a.cantidad_secciones }}</td>
-        <td>{{ a.secciones_asignadas }}</td>
-        <td>{{ a.fecha_asignacion | date: 'short' }}</td>
-        <td>{{ a.fecha_inicio | date: 'short'}}</td>
+      <tr *ngFor="let asig of asignaciones">
+        <td>{{ asig.id }}</td>
+        <td>{{ asig.carreraid }}</td>
+        <td>{{ asig.plan }}</td>
+        <td>{{ asig.ciclo }}</td>
+        <td>{{ asig.modalidad }}</td>
+        <td>{{ asig.cantidad_secciones }}</td>
         <td>
-          <span [class]="'badge ' + (a.estado ? 'bg-success' : 'bg-danger')">
-            {{ a.estado ? 'Activo' : 'Inactivo' }}
+          <span [class.text-success]="asig.estado" [class.text-danger]="!asig.estado">
+            {{ asig.estado ? 'Activo' : 'Inactivo' }}
           </span>
         </td>
         <td>
-        <button
-            class="btn btn-primary btn-sm"
-            (click)="mostrarCursos(a.carreraid, a.plan, a.ciclo)"
-        >
-            Listado de Cursos
-        </button>
+          <button class="btn btn-warning btn-sm" (click)="editAsignacion(asig)">Editar</button>
+          <button class="btn btn-danger btn-sm ms-2" (click)="deleteAsignacion(asig.id)">Eliminar</button>
         </td>
-
-
       </tr>
     </tbody>
   </table>
-</div>
-
-<!-- Modal de Cursos -->
-<div
-  class="modal fade"
-  id="modalCursos"
-  tabindex="-1"
-  aria-labelledby="modalCursosLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalCursosLabel">Listado de Cursos por Asignación</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Cerrar"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <table class="table table-bordered table-striped">
-          <thead class="table-dark">
-            <tr>
-              <th>#</th>
-              <th>Curso</th>
-              <th>Horas</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let curso of cursosFiltrados; let i = index">
-              <td>{{ i + 1 }}</td>
-              <td>{{ curso.nombre }}</td>
-              <td>{{ curso.horas }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
 </div>

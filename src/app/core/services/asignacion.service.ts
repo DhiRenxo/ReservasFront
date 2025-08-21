@@ -1,14 +1,16 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../environments/environments';
 import {
-  Asignacion,
   AsignacionCreate,
+  AsignacionResponse,
   AsignacionUpdate,
-  AsignacionEstadoUpdate,
-  AsignacionDelete
+  AsignacionUpdateSecciones,
+  AsignacionUpdateEstado,
+  AsignacionCursoDocenteCreate,
+  AsignacionCursoDocenteResponse
 } from '../models/asignacion.model';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -26,55 +28,65 @@ export class AsignacionService {
     });
   }
 
-  // Crear nueva asignación
-  crear(asignacion: AsignacionCreate): Observable<Asignacion> {
-    return this.http.post<Asignacion>(this.apiUrl, asignacion, {
+  // -----------------------
+  // CRUD Asignaciones
+  // -----------------------
+
+  create(asignacion: AsignacionCreate): Observable<AsignacionResponse> {
+    return this.http.post<AsignacionResponse>(this.apiUrl, asignacion, {
       headers: this.getAuthHeaders()
     });
   }
 
-  // Obtener todas las asignaciones
-  listar(): Observable<Asignacion[]> {
-    return this.http.get<Asignacion[]>(this.apiUrl, {
+  getAll(skip = 0, limit = 100): Observable<AsignacionResponse[]> {
+    return this.http.get<AsignacionResponse[]>(`${this.apiUrl}?skip=${skip}&limit=${limit}`, {
       headers: this.getAuthHeaders()
     });
   }
 
-  // Obtener una asignación por ID
-  obtener(id: number): Observable<Asignacion> {
-    return this.http.get<Asignacion>(`${this.apiUrl}/${id}`, {
+  getById(id: number): Observable<AsignacionResponse> {
+    return this.http.get<AsignacionResponse>(`${this.apiUrl}/${id}`, {
       headers: this.getAuthHeaders()
     });
   }
 
-  // Actualizar asignación (update completa)
-  actualizar(id: number, asignacion: AsignacionUpdate): Observable<Asignacion> {
-    return this.http.put<Asignacion>(`${this.apiUrl}/${id}`, asignacion, {
+  update(id: number, asignacion: AsignacionUpdate): Observable<AsignacionResponse> {
+    return this.http.put<AsignacionResponse>(`${this.apiUrl}/${id}`, asignacion, {
       headers: this.getAuthHeaders()
     });
   }
 
-  // Cambiar estado (habilitar/deshabilitar)
-  cambiarEstado(id: number, estado: AsignacionEstadoUpdate): Observable<Asignacion> {
-    return this.http.patch<Asignacion>(`${this.apiUrl}/${id}/estado`, estado, {
+  updateSecciones(id: number, update: AsignacionUpdateSecciones): Observable<AsignacionResponse> {
+    return this.http.patch<AsignacionResponse>(`${this.apiUrl}/${id}/secciones`, update, {
       headers: this.getAuthHeaders()
     });
   }
 
-  // Actualizar solo cantidad de secciones
-    actualizarCantidadSecciones(id: number, data: { cantidad_secciones: number }): Observable<Asignacion> {
-      return this.http.patch<Asignacion>(
-        `${this.apiUrl}/${id}/cantidad-secciones`,
-        data,
-        { headers: this.getAuthHeaders() }
-      );
-  }     
+  updateEstado(id: number, data: AsignacionUpdateEstado): Observable<AsignacionResponse> {
+    return this.http.patch<AsignacionResponse>(`${this.apiUrl}/${id}/estado`, data, {
+      headers: this.getAuthHeaders()
+    });
+  }
 
-  // Eliminar (desactivar)
-  eliminar(data: AsignacionDelete): Observable<{ mensaje: string }> {
-    return this.http.delete<{ mensaje: string }>(this.apiUrl, {
-      headers: this.getAuthHeaders(),
-      body: data // DELETE con cuerpo, permitido por FastAPI
+  delete(id: number): Observable<AsignacionResponse> {
+    return this.http.delete<AsignacionResponse>(`${this.apiUrl}/${id}`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  // -----------------------
+  // Relación Asignacion - Curso - Docente
+  // -----------------------
+
+  addRelacion(relacion: AsignacionCursoDocenteCreate): Observable<AsignacionCursoDocenteResponse> {
+    return this.http.post<AsignacionCursoDocenteResponse>(`${this.apiUrl}/relacion`, relacion, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  getRelaciones(asignacionId: number): Observable<AsignacionCursoDocenteResponse[]> {
+    return this.http.get<AsignacionCursoDocenteResponse[]>(`${this.apiUrl}/${asignacionId}/relaciones`, {
+      headers: this.getAuthHeaders()
     });
   }
 }
