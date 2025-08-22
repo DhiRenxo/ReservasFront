@@ -30,7 +30,6 @@ export class AsignacionService {
     });
   }
 
-
   create(asignacion: AsignacionCreate): Observable<AsignacionResponse> {
     return this.http.post<AsignacionResponse>(this.apiUrl, asignacion, {
       headers: this.getAuthHeaders()
@@ -93,7 +92,7 @@ export class AsignacionService {
     );
   }
 
-  actualizarDocenteCurso(asignacionId: number, data: { curso_id: number; docente_id: number }): Observable<AsignacionCursoDocenteResponse> {
+  actualizarDocenteCurso(asignacionId: number, data: DocenteUpdate): Observable<AsignacionCursoDocenteResponse> {
     return this.http.patch<AsignacionCursoDocenteResponse>(
       `${this.apiUrl}/${asignacionId}/relaciones/docente`,
       data,
@@ -101,5 +100,29 @@ export class AsignacionService {
     );
   }
 
+  deleteSeccion(asignacionId: number, seccion: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${asignacionId}/secciones/${seccion}`, {
+      headers: this.getAuthHeaders()
+    });
+  }
 
+  /** 🔹 Recalcular horas de un docente */
+  recalcularHorasDocente(docenteId: number): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/recalcular/${docenteId}`,
+      {},
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+   actualizarRelacion(
+    relacionId: number,
+    data: Partial<AsignacionCursoDocenteCreate>
+  ): Observable<AsignacionCursoDocenteResponse> {
+    return this.http.patch<AsignacionCursoDocenteResponse>(
+      `${this.apiUrl}/relaciones/${relacionId}`,
+      data,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 }

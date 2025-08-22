@@ -1,6 +1,5 @@
 import { Docente } from '../models/docente.model';
 
-
 export interface AsignacionBase {
   carreraid: number;
   plan: string;
@@ -10,7 +9,6 @@ export interface AsignacionBase {
   secciones_asignadas?: number;
   estado?: boolean;
   fecha_inicio?: string | null;
-
 }
 
 export interface AsignacionCreate extends AsignacionBase {}
@@ -23,7 +21,6 @@ export interface AsignacionUpdate {
   secciones_asignadas?: number;
   estado?: boolean;
   fecha_inicio?: string | null;
-
 }
 
 export interface AsignacionUpdateSecciones {
@@ -40,10 +37,19 @@ export interface AsignacionResponse extends AsignacionBase {
   fecha_modificada: string;
 }
 
+
 export interface AsignacionCursoDocenteBase {
   asignacion_id: number;
   curso_id: number;
-  docente_id: number;
+  docente_id: number | null;
+  seccion: number;
+
+ 
+  es_bloque?: boolean;
+  bloque?: string | null;        
+  duplica_horas?: boolean;
+  comentario?: string | null;
+  disponibilidad?: string | null;
 }
 
 export interface AsignacionCursoDocenteCreate extends AsignacionCursoDocenteBase {}
@@ -55,9 +61,17 @@ export interface AsignacionCursoDocenteResponse extends AsignacionCursoDocenteBa
 export interface DocenteUpdate {
   curso_id: number;
   docente_id: number;
+  seccion: number;
 }
 
 export interface CursosUpdate {
   curso_ids: number[]; 
+  docente_id?: number;   
 }
 
+export interface DocenteActualizar {
+  asignacion_id: number; 
+  curso_id: number;
+  docente_id: number;
+  seccion: number;
+}
