@@ -6,7 +6,7 @@ export interface AsignacionBase {
   ciclo: string;
   modalidad?: string;
   cantidad_secciones: number;
-  secciones_asignadas?: number;
+  seccion_asignadas?: boolean;
   estado?: boolean;
   fecha_inicio?: string | null;
 }
@@ -18,7 +18,7 @@ export interface AsignacionUpdate {
   ciclo?: string;
   modalidad?: string;
   cantidad_secciones?: number;
-  secciones_asignadas?: number;
+  seccion_asignadas?: boolean;
   estado?: boolean;
   fecha_inicio?: string | null;
 }
@@ -74,4 +74,16 @@ export interface DocenteActualizar {
   curso_id: number;
   docente_id: number;
   seccion: number;
+}
+
+export interface AsignacionCursoDocenteComentarioUpdate {
+  comentario?: string | null;
+  disponibilidad?: string | null;
+}
+
+
+export interface AsignacionCursoDocenteUpdate {
+  es_bloque?: boolean;
+  bloque?: string | null;    
+  duplica_horas?: boolean;
 }

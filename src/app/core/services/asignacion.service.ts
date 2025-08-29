@@ -11,7 +11,9 @@ import {
   AsignacionCursoDocenteCreate,
   AsignacionCursoDocenteResponse,
   CursosUpdate,
-  DocenteUpdate
+  DocenteUpdate,
+  AsignacionCursoDocenteComentarioUpdate,
+  AsignacionCursoDocenteUpdate
 } from '../models/asignacion.model';
 
 @Injectable({
@@ -31,13 +33,13 @@ export class AsignacionService {
   }
 
   create(asignacion: AsignacionCreate): Observable<AsignacionResponse> {
-    return this.http.post<AsignacionResponse>(this.apiUrl, asignacion, {
+    return this.http.post<AsignacionResponse>(`${this.apiUrl}/`, asignacion, {
       headers: this.getAuthHeaders()
     });
   }
 
   getAll(skip = 0, limit = 100): Observable<AsignacionResponse[]> {
-    return this.http.get<AsignacionResponse[]>(`${this.apiUrl}?skip=${skip}&limit=${limit}`, {
+    return this.http.get<AsignacionResponse[]>(`${this.apiUrl}/?skip=${skip}&limit=${limit}`, {
       headers: this.getAuthHeaders()
     });
   }
@@ -117,7 +119,7 @@ export class AsignacionService {
 
    actualizarRelacion(
     relacionId: number,
-    data: Partial<AsignacionCursoDocenteCreate>
+    data: AsignacionCursoDocenteUpdate
   ): Observable<AsignacionCursoDocenteResponse> {
     return this.http.patch<AsignacionCursoDocenteResponse>(
       `${this.apiUrl}/relaciones/${relacionId}`,
@@ -125,4 +127,33 @@ export class AsignacionService {
       { headers: this.getAuthHeaders() }
     );
   }
+
+
+  activarBloque(
+    relacionId: number,
+    bloque: 'A' | 'B'
+  ): Observable<AsignacionCursoDocenteResponse> {
+    return this.http.patch<AsignacionCursoDocenteResponse>(
+      `${this.apiUrl}/relaciones/${relacionId}/activar`,
+      { bloque },
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  actualizarComentarioDisponibilidad(
+    relacionId: number,
+    data: AsignacionCursoDocenteComentarioUpdate
+  ): Observable<AsignacionCursoDocenteResponse> {
+    return this.http.patch<AsignacionCursoDocenteResponse>(
+      `${this.apiUrl}/relaciones/${relacionId}/comentario`,
+      data,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+
+  desactivarBloque(relacionId: number) {
+    return this.http.put<any>(`${this.apiUrl}/relaciones/${relacionId}/desactivar-bloque`, {});
+  }
+
 }

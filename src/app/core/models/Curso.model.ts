@@ -11,6 +11,3 @@ export interface CursoModel {
   horasasignadas?: number;
 }
 
-interface CursoModal extends CursoModel {
-  selected: boolean;
-}

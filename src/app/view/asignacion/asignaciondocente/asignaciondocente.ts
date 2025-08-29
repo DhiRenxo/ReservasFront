@@ -7,8 +7,12 @@ import { CursoService } from '../../../core/services/curso.service';
 import { AsignacionResponse } from '../../../core/models/asignacion.model';
 import { Docente } from '../../../core/models/docente.model';
 import { CursoModel } from '../../../core/models/Curso.model';
+import { CarreraService } from '../../../core/services/carrera.service';
+import { CarreraModel } from '../../../core/models/carrera.model'; 
+
 
 interface CursoAsignacion {
+  id: number;
   asignacion_id: number;
   curso_id: number;
   seccion: number;
@@ -16,13 +20,12 @@ interface CursoAsignacion {
   horas: number;
   docente?: Docente;
   docenteIdTemp?: number | null;
-
-  // 🔹 Nuevos campos de la relación
   es_bloque?: boolean;
   bloque?: string | null;
   duplica_horas?: boolean;
   comentario?: string | null;
   disponibilidad?: string | null;
+  activo?: boolean;
 }
 
 @Component({
@@ -37,29 +40,46 @@ export class Asignaciondocente implements OnInit {
   docentes: Docente[] = [];
   cursosPorAsignacion: { [asignacionId: number]: CursoAsignacion[] } = {};
   seleccion: { [clave: string]: number | null } = {};
+  alerta: { tipo: 'success' | 'danger' | 'info' | null; mensaje: string } = { tipo: null, mensaje: '' };
+  carrerasMap: { [id: number]: string } = {};
+
 
   constructor(
     private asignacionService: AsignacionService,
     private docenteService: DocenteService,
-    private cursoService: CursoService
+    private cursoService: CursoService,
+    private carreraService: CarreraService
   ) {}
 
   ngOnInit(): void {
     this.cargarAsignaciones();
     this.cargarDocentes();
+    this.cargarCarreras();
+  }
+
+  mostrarAlerta(tipo: 'success' | 'danger' | 'info', mensaje: string) {
+    this.alerta = { tipo, mensaje };
+    setTimeout(() => (this.alerta = { tipo: null, mensaje: '' }), 3000);
   }
 
   cargarAsignaciones(carreraId?: number) {
     this.asignacionService.getAll().subscribe(res => {
-      this.asignaciones = res.filter(a =>
-        a.estado && (!carreraId || a.carreraid === carreraId)
-      );
+      this.asignaciones = res.filter(a => a.estado && (!carreraId || a.carreraid === carreraId));
     });
   }
 
   cargarDocentes() {
     this.docenteService.listar().subscribe(res => {
       this.docentes = res.filter(d => d.estado);
+    });
+  }
+
+  cargarCarreras() {
+    this.carreraService.listar().subscribe(res => {
+      this.carrerasMap = res.reduce((acc, carrera) => {
+        acc[carrera.id] = carrera.nombre;
+        return acc;
+      }, {} as { [id: number]: string });
     });
   }
 
@@ -78,6 +98,7 @@ export class Asignaciondocente implements OnInit {
           const clave = `${r.curso_id}_${r.seccion}`;
 
           cursosAsignados.push({
+            id: r.id,
             asignacion_id: r.asignacion_id,
             curso_id: r.curso_id,
             seccion: r.seccion,
@@ -85,13 +106,12 @@ export class Asignaciondocente implements OnInit {
             horas: cursosMap[r.curso_id]?.horas || 0,
             docente: docenteAsignado,
             docenteIdTemp: this.seleccion[clave] || docenteAsignado?.id || null,
-
-            // 🔹 campos de bloques, comentarios y disponibilidad
             es_bloque: r.es_bloque,
             bloque: r.bloque,
             duplica_horas: r.duplica_horas,
             comentario: r.comentario,
-            disponibilidad: r.disponibilidad
+            disponibilidad: r.disponibilidad,
+            activo: (r as any).activo
           });
 
           if (!this.seleccion[clave] && docenteAsignado) {
@@ -123,31 +143,44 @@ export class Asignaciondocente implements OnInit {
       if (docenteNuevo) {
         curso.docente = docenteNuevo;
       }
-      alert(`✅ Docente actualizado para el curso ${curso.nombreCurso} - sección ${curso.seccion}`);
+      this.mostrarAlerta('success', `Docente actualizado para ${curso.nombreCurso} - sección ${curso.seccion}`);
     });
   }
 
-  /** 🔹 Guardar los campos de bloque/comentario/disponibilidad */
   guardarRelacion(curso: CursoAsignacion) {
-    this.asignacionService.actualizarRelacion(curso.asignacion_id, {
-      curso_id: curso.curso_id,
-      seccion: curso.seccion,
-      es_bloque: curso.es_bloque,
+    this.asignacionService.actualizarRelacion(curso.id, {
       bloque: curso.bloque,
-      duplica_horas: curso.duplica_horas,
-      comentario: curso.comentario,
-      disponibilidad: curso.disponibilidad,
-      docente_id: curso.docenteIdTemp || null
-    }).subscribe(() => {
-      alert(`✅ Relación actualizada para ${curso.nombreCurso} (Sección ${curso.seccion})`);
+      es_bloque: curso.es_bloque,
+      duplica_horas: curso.duplica_horas
+    }).subscribe({
+      next: () => {
+        this.mostrarAlerta('info', `Relación actualizada para ${curso.nombreCurso} (Sección ${curso.seccion})`);
+      },
+      error: err => console.error("ERROR guardarRelacion", err)
     });
+  }
+
+  activarBloque(curso: CursoAsignacion) {
+    this.asignacionService.activarBloque(curso.id, curso.bloque as 'A' | 'B')
+      .subscribe({
+        next: (res: any) => {
+          curso.activo = res.activo; // 👈 ya no da error
+          this.cursosPorAsignacion[curso.asignacion_id].forEach(c => {
+            if (c.curso_id === curso.curso_id && c.seccion === curso.seccion && c.id !== curso.id) {
+              c.activo = false;
+            }
+          });
+          this.mostrarAlerta('success', `Se activó bloque ${curso.bloque} en ${curso.nombreCurso}`);
+        },
+        error: err => console.error("ERROR activarBloque", err)
+      });
   }
 
   recalcularHoras(docente: Docente) {
     this.asignacionService.recalcularHorasDocente(docente.id!).subscribe(res => {
       docente.horasactual = res.horasactual;
       docente.horastemporales = res.horastemporales;
-      alert(`🔄 Horas recalculadas para ${docente.nombre}`);
+      this.mostrarAlerta('success', `Horas recalculadas para ${docente.nombre}`);
     });
   }
 
@@ -169,14 +202,14 @@ export class Asignaciondocente implements OnInit {
           curso_ids: cursoIdsUnicos
         }).subscribe(() => {
           this.cargarCursos(asig);
-          alert(`✅ Se agregó la sección ${nuevaCantidad} a la asignación`);
+          this.mostrarAlerta('success', `Se agregó la sección ${nuevaCantidad}`);
         });
       });
   }
 
   quitarSeccion(asig: AsignacionResponse) {
     if (asig.cantidad_secciones <= 1) {
-      alert("⚠️ No puedes tener menos de 1 sección");
+      this.mostrarAlerta('danger', 'No puedes tener menos de 1 sección');
       return;
     }
 
@@ -187,17 +220,61 @@ export class Asignaciondocente implements OnInit {
         asig.cantidad_secciones = updated.cantidad_secciones;
         this.asignacionService.deleteSeccion(asig.id, ultimaSeccion).subscribe(() => {
           this.cargarCursos(asig);
-          alert(`❌ Se eliminó la sección ${ultimaSeccion} de la asignación`);
+          this.mostrarAlerta('danger', `Se eliminó la sección ${ultimaSeccion}`);
         });
       });
   }
 
   desactivarAsignacion(asig: AsignacionResponse) {
-    if (!confirm("❌ ¿Seguro que deseas desactivar esta asignación?")) return;
-
     this.asignacionService.updateEstado(asig.id, { estado: false }).subscribe(updated => {
       asig.estado = false;
-      alert("🚫 Asignación desactivada correctamente");
+
+      (this.cursosPorAsignacion[asig.id] || []).forEach(curso => {
+        if (curso.activo) {
+          curso.activo = false; 
+          this.asignacionService.desactivarBloque(curso.id).subscribe({
+            next: () => {},
+            error: err => console.error("ERROR desactivarBloque", err)
+          });
+        }
+      });
+
+      this.mostrarAlerta('danger', 'Asignación desactivada y bloques inactivos');
     });
   }
+
+  activarAsignacion(asig: AsignacionResponse) {
+    this.asignacionService.updateEstado(asig.id, { estado: true }).subscribe(updated => {
+      asig.estado = true;
+      this.mostrarAlerta('success', 'Asignación activada. Los bloques permanecen inactivos');
+    });
+  }
+
+
+
+  toggleBloque(curso: CursoAsignacion) {
+    if (curso.activo) {
+      this.asignacionService.desactivarBloque(curso.id).subscribe({
+        next: () => {
+          curso.activo = false;
+          this.mostrarAlerta('danger', `Se desactivó el bloque ${curso.bloque} en ${curso.nombreCurso}`);
+        },
+        error: (err: any) => console.error("ERROR desactivarBloque", err)
+      });
+    } else {
+      this.asignacionService.activarBloque(curso.id, curso.bloque as 'A' | 'B').subscribe({
+        next: (res: any) => {
+          curso.activo = res.activo;
+          this.cursosPorAsignacion[curso.asignacion_id].forEach(c => {
+            if (c.curso_id === curso.curso_id && c.seccion === curso.seccion && c.id !== curso.id) {
+              c.activo = false;
+            }
+          });
+          this.mostrarAlerta('success', `Se activó bloque ${curso.bloque} en ${curso.nombreCurso}`);
+        },
+        error: (err: any) => console.error("ERROR activarBloque", err)
+      });
+    }
+  }
+
 }

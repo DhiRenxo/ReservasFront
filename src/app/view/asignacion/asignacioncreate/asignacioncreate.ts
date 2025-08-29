@@ -27,7 +27,7 @@ export class AsignacionCreateComponent implements OnInit {
   cursosModal: CursoModal[] = [];
   modalData: AsignacionResponse | null = null;
 
-  asignacion: AsignacionCreate = { carreraid: 0, plan: '', ciclo: '', modalidad: '', cantidad_secciones: 1, estado: true, fecha_inicio: '' };
+  asignacion: AsignacionCreate = { carreraid: 0, plan: '', ciclo: '', modalidad: '', cantidad_secciones: 1, estado: true, fecha_inicio: null };
   editMode: boolean = false;
   selectedId: number | null = null;
 
@@ -56,11 +56,18 @@ export class AsignacionCreateComponent implements OnInit {
   }
 
   createAsignacion() {
-    this.asignacionService.create(this.asignacion).subscribe({
-      next: () => { this.getAsignaciones(); this.resetForm(); },
-      error: (err) => console.error('Error al crear asignación', err)
-    });
-  }
+  const payload = {
+    ...this.asignacion,
+    fecha_inicio: this.asignacion.fecha_inicio 
+      ? new Date(this.asignacion.fecha_inicio).toISOString() 
+      : null
+  };
+
+  this.asignacionService.create(payload).subscribe({
+    next: () => { this.getAsignaciones(); this.resetForm(); },
+    error: (err) => console.error('Error al crear asignación', err)
+  });
+}
 
   editAsignacion(asig: AsignacionResponse) {
     this.asignacion = { 

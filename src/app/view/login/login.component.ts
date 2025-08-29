@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Usuario } from '../../core/models/usuario.model';
+
+export interface AuthResponse {
+  access_token: string;
+  usuario: Usuario;
+}
 
 
 declare global {
@@ -40,12 +46,28 @@ export class LoginComponent implements AfterViewInit {
 
   handleCredentialResponse(response: any) {
     const token = response.credential;
+
     this.authService.loginConGoogle(token).subscribe({
-      next: () => {
+      next: (data) => {
+        console.log("✅ Respuesta login:", data);
+
+        // 👇 Guardamos token y usuario_id
+        localStorage.setItem("access_token", data.access_token);
+
+        if (data.usuario?.id) {
+          localStorage.setItem("usuario_id", data.usuario.id.toString());
+        } else {
+          console.warn("⚠️ No vino usuario en la respuesta del login");
+        }
+
         this.router.navigate(['/app/home']);
       },
-      error: () => alert('Error en login'),
+      error: (err) => {
+        console.error("❌ Error en login:", err);
+        alert('Error en login');
+      },
     });
   }
+
 
 }

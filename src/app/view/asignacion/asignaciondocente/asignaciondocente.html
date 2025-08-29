@@ -1,32 +1,31 @@
+<div *ngIf="alerta.tipo" class="alert" [ngClass]="'alert-' + alerta.tipo">
+  {{ alerta.mensaje }}
+</div>
+
 <div *ngFor="let asig of asignaciones" class="card my-3 shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold text-primary">
       Plan: {{ asig.plan }} | Ciclo: {{ asig.ciclo }} | Modalidad: {{ asig.modalidad }}
     </h5>
-    <p class="card-text text-muted mb-2">
-      Carrera ID: <span class="fw-semibold">{{ asig.carreraid }}</span> |
+    <p class="text-muted mb-2">
+      Carrera: <span class="fw-semibold">{{ carrerasMap[asig.carreraid] || '---' }}</span> |
       Secciones: <span class="fw-semibold">{{ asig.cantidad_secciones }}</span>
     </p>
     <div class="d-flex gap-2 mt-2">
-      <button class="btn btn-success btn-sm"
-              (click)="agregarSeccion(asig)">
+      <button class="btn btn-success btn-sm" (click)="agregarSeccion(asig)">
         <i class="bi bi-plus"></i>
       </button>
-
-      <!-- Botón para quitar sección -->
-      <button class="btn btn-danger btn-sm"
-              (click)="quitarSeccion(asig)">
+      <button class="btn btn-danger btn-sm" (click)="quitarSeccion(asig)">
         <i class="bi bi-dash"></i>
       </button>
-
-      <button class="btn btn-danger btn-sm"
-              (click)="desactivarAsignacion(asig)"
-              [disabled]="!asig.estado">
-        <i class="bi bi-x-circle"></i> Desactivar Asignación
+      <button class="btn btn-danger btn-sm" 
+        (click)="asig.estado ? desactivarAsignacion(asig) : activarAsignacion(asig)">
+        <i class="bi" [ngClass]="asig.estado ? 'bi-x-circle' : 'bi-check-circle'"></i>
+        {{ asig.estado ? 'Desactivar Asignación' : 'Activar Asignación' }}
       </button>
-    </div>
 
-    <button class="btn btn-outline-primary btn-sm" (click)="cargarCursos(asig)">
+    </div>
+    <button class="btn btn-outline-primary btn-sm mt-2" (click)="cargarCursos(asig)">
       <i class="bi bi-eye"></i> Ver Cursos Relacionados
     </button>
 
@@ -40,8 +39,6 @@
             <th>Docente</th>
             <th>Bloque</th>
             <th>Duplica Horas</th>
-            <th>Comentario</th>
-            <th>Disponibilidad</th>
             <th>Horas Actual</th>
             <th>Horas Temporales</th>
             <th class="text-center">Acciones</th>
@@ -52,8 +49,6 @@
             <td>{{ curso.nombreCurso }}</td>
             <td class="text-center">{{ curso.seccion }}</td>
             <td class="text-center">{{ curso.horas }}</td>
-
-            <!-- Docente -->
             <td>
               <select class="form-select form-select-sm"
                       [(ngModel)]="seleccion[curso.curso_id + '_' + curso.seccion]"
@@ -62,51 +57,36 @@
                 <option *ngFor="let d of docentes" [ngValue]="d.id">{{ d.nombre }}</option>
               </select>
             </td>
-
-            <!-- Bloques -->
             <td>
               <select class="form-select form-select-sm" [(ngModel)]="curso.bloque">
                 <option [ngValue]="null">-- Ninguno --</option>
-                <option value="A">Bloque A</option>
-                <option value="B">Bloque B</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
               </select>
-              <div class="form-check">
+              <div class="form-check mt-1">
                 <input class="form-check-input" type="checkbox" [(ngModel)]="curso.es_bloque">
-                <label class="form-check-label">Es Bloque</label>
+                <label class="form-check-label">Bloque</label>
               </div>
+              <button *ngIf="curso.es_bloque" class="btn btn-sm mt-1"
+                      [ngClass]="curso.activo ? 'btn-danger' : 'btn-success'"
+                      (click)="toggleBloque(curso)">
+                {{ curso.activo ? 'Desactivar' : 'Activar' }}
+              </button>
             </td>
-
-            <!-- Duplica horas -->
             <td class="text-center">
               <input type="checkbox" class="form-check-input" [(ngModel)]="curso.duplica_horas">
             </td>
-
-            <!-- Comentario -->
-            <td>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="curso.comentario">
-            </td>
-
-            <!-- Disponibilidad -->
-            <td>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="curso.disponibilidad">
-            </td>
-
             <td class="text-center">{{ curso.docente?.horasactual || 0 }}</td>
             <td class="text-center">{{ curso.docente?.horastemporales || 0 }}</td>
-
-            <!-- Acciones -->
             <td class="text-center d-flex gap-2 justify-content-center">
-              <button class="btn btn-success btn-sm" 
+              <button class="btn btn-success btn-sm"
                       (click)="guardarDocente(curso)"
                       [disabled]="!seleccion[curso.curso_id + '_' + curso.seccion]">
                 <i class="bi bi-save"></i> Guardar Docente
               </button>
-
-              <button class="btn btn-primary btn-sm"
-                      (click)="guardarRelacion(curso)">
-                <i class="bi bi-pencil-square"></i> Guardar Relación
+              <button class="btn btn-primary btn-sm" (click)="guardarRelacion(curso)">
+                <i class="bi bi-pencil-square"></i> Guardar Bloques
               </button>
-
               <button class="btn btn-warning btn-sm"
                       (click)="curso.docente ? recalcularHoras(curso.docente) : null"
                       [disabled]="!curso.docente">
@@ -116,9 +96,7 @@
           </tr>
         </tbody>
       </table>
-
     </div>
-
     <ng-template #noCursos>
       <p class="text-muted mt-3">No tiene ningún curso guardado</p>
     </ng-template>

@@ -1,1 +1,118 @@
-<p>asignacionvalidacion works!</p>
+<div *ngFor="let asig of asignaciones" class="card my-3 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title">
+      Plan: {{ asig.plan }} | Modalidad: {{ asig.modalidad }} |
+      Carrera:
+      {{ asig.carreraid && carrerasMap[asig.carreraid] 
+          ? carrerasMap[asig.carreraid].nombre 
+          : 'Sin carrera' }}
+    </h5>
+
+    <div *ngIf="cursosPorAsignacion[asig.id]">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Curso</th>
+            <th>Sección</th>
+            <th>Docente</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let curso of cursosPorAsignacion[asig.id]">
+            <td>
+              {{ curso.curso_id && cursosMap[curso.curso_id] 
+                  ? cursosMap[curso.curso_id].nombre 
+                  : ('Curso ' + curso.curso_id) }}
+            </td>
+            <td>{{ curso.seccion }}</td>
+            <td>
+              {{ curso.docente_id && docentesMap[curso.docente_id] 
+                  ? docentesMap[curso.docente_id].nombre 
+                  : ('Docente ' + curso.docente_id) }}
+            </td>
+            <td>
+              <button class="btn btn-primary btn-sm" 
+                      (click)="curso.docente_id && abrirModal(curso.docente_id, asig.modalidad!)">
+                Editar Disponibilidad
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade show" tabindex="-1" role="dialog" *ngIf="mostrarModal" style="display:block;">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Disponibilidad del Docente</h5>
+        <button type="button" class="btn-close" (click)="cerrarModal()"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Selección de modalidad -->
+        <div class="row mb-3">
+          <div class="col-auto">
+            <label class="fw-bold me-2">Modalidad:</label>
+            <select [(ngModel)]="modalidadSeleccionada"
+                    (ngModelChange)="seleccionarModalidad($event)"
+                    class="form-select">
+              <option value="PRESENCIAL">PRESENCIAL</option>
+              <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
+              <option value="DISTANCIA">DISTANCIA</option>
+            </select>
+          </div>
+
+          <!-- Selección de turno -->
+          <div class="col-auto">
+            <label class="fw-bold me-2">Turno:</label>
+            <select [(ngModel)]="turnoSeleccionado"
+                    (ngModelChange)="seleccionarTurno($event)"
+                    class="form-select">
+              <option *ngFor="let turno of getTurnosDisponibles()" [value]="turno">
+                {{ turno }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Horario estilo matriz -->
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th>Hora</th>
+                <th *ngFor="let dia of dias">{{ dia }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let bloque of (turnoSeleccionado ? generarBloques(turnoSeleccionado) : [])">
+                  <td><strong>{{ bloque }}</strong></td>
+                  <td *ngFor="let dia of dias">
+                    <input type="checkbox"
+                          class="form-check-input"
+                          [checked]="disponibilidadSeleccionada[dia][bloque]"
+                          (change)="toggleBloque(dia, bloque)">
+                  </td>
+                </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-success" (click)="guardarDisponibilidad()">
+          Guardar Disponibilidad
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
