@@ -17,4 +17,5 @@ export interface Usuario {
   contacto_nombre?: string;
   contacto_numero?: string;
   correo_alternativo?: string;
+  cod_docente?:string;
 }

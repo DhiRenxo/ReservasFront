@@ -7,29 +7,68 @@
       </div>
       <div class="modal-body">
         <form (ngSubmit)="guardar()" #f="ngForm">
+
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Nombre</label>
-              <input type="text" class="form-control" [(ngModel)]="docente.nombre" name="nombre" required />
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="docente.nombre"
+                name="nombre"
+                required />
             </div>
             <div class="col-md-6">
               <label class="form-label">Código</label>
-              <input type="text" class="form-control" [(ngModel)]="docente.codigo" name="codigo" required />
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="docente.codigo"
+                name="codigo"
+                required />
+            </div>
+          </div>
+
+          <!-- NUEVO CAMPO CORREO -->
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">Correo electrónico</label>
+              <input
+                type="email"
+                class="form-control"
+                [(ngModel)]="docente.correo"
+                name="correo"
+                placeholder="docente@instituto.edu.pe"
+                required />
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Tipo de Contrato</label>
-              <input type="text" class="form-control" [(ngModel)]="docente.tipocontrato" name="tipocontrato" required />
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="docente.tipocontrato"
+                name="tipocontrato"
+                required />
             </div>
             <div class="col-md-3">
               <label class="form-label">Horas Semanales</label>
-              <input type="number" class="form-control" [(ngModel)]="docente.horassemanal" name="horassemanal" required />
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="docente.horassemanal"
+                name="horassemanal"
+                required />
             </div>
             <div class="col-md-3">
               <label class="form-label">Horas Actual</label>
-              <input type="number" class="form-control" [(ngModel)]="docente.horasactual" name="horasactual"/>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="docente.horasactual"
+                name="horasactual" />
             </div>
           </div>
 
@@ -42,7 +81,7 @@
           </div>
 
           <div class="modal-footer">
-            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="submit" class="btn btn-success" [disabled]="!f.valid">Guardar</button>
             <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
           </div>
         </form>

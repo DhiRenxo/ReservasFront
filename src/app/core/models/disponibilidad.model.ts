@@ -1,43 +1,29 @@
-export type Modalidad = 'PRESENCIAL' | 'SEMIPRESENCIAL' | 'DISTANCIA';
-export type Turno = 'Mañana' | 'Tarde' | 'Noche';
-
+// models/disponibilidad.model.ts
 export interface Horario {
-  hora_inicio: string; // formato "HH:mm"
-  hora_fin: string;    // formato "HH:mm"
+  hora_inicio: string; // formato "HH:MM"
+  hora_fin: string;
 }
 
-export interface DisponibilidadDocente {
-  id?: number;
-  docente_id: number;
+export interface DisponibilidadDocenteBase {
   dia: string;
-  modalidad: Modalidad;
-  turno: Turno;
-  horarios: Horario[];   // <-- ahora es un array
+  modalidad: string;
+  turno: string;
+  horarios: Horario[];
 }
 
-export interface DisponibilidadDocenteCreate {
-  docente_id: number;
-  dia: string;
-  modalidad: Modalidad;
-  turno: Turno;
-  horarios: Horario[];   // <-- requerido para crear
-}
+export interface DisponibilidadDocenteCreate extends DisponibilidadDocenteBase {}
 
 export interface DisponibilidadDocenteUpdate {
   dia?: string;
-  modalidad?: Modalidad;
-  turno?: Turno;
-  horarios?: Horario[];  // <-- opcional en update
+  modalidad?: string;
+  turno?: string;
+  horarios?: Horario[];
 }
 
-// Opcional: estructuras para UI de selección de bloques
-export interface BloqueHorario {
-  inicio: string;
-  fin: string;
-  seleccionado: boolean;
+export interface DisponibilidadDocenteResponse extends DisponibilidadDocenteBase {
+  id: number;
+  docente_id: number;
 }
 
-export interface DisponibilidadDia {
-  dia: string;
-  bloques: BloqueHorario[];
-}
+export type Modalidad = 'PRESENCIAL' | 'DISTANCIA' | 'SEMIPRESENCIAL';
+export type Turno = 'Mañana' | 'Tarde' | 'Noche';

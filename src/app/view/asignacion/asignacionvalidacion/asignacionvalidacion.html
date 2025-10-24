@@ -34,7 +34,7 @@
             <td>
               <button class="btn btn-primary btn-sm" 
                       (click)="curso.docente_id && abrirModal(curso.docente_id, asig.modalidad!)">
-                Editar Disponibilidad
+                Ver Disponibilidad
               </button>
             </td>
           </tr>
@@ -44,7 +44,7 @@
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal solo lectura con selección de modalidad y turno -->
 <div class="modal fade show" tabindex="-1" role="dialog" *ngIf="mostrarModal" style="display:block;">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content shadow-lg">
@@ -81,7 +81,7 @@
           </div>
         </div>
 
-        <!-- Horario estilo matriz -->
+        <!-- Horario estilo matriz solo lectura -->
         <div class="table-responsive">
           <table class="table table-bordered align-middle text-center">
             <thead class="table-light">
@@ -92,15 +92,14 @@
             </thead>
             <tbody>
               <tr *ngFor="let bloque of (turnoSeleccionado ? generarBloques(turnoSeleccionado) : [])">
-                  <td><strong>{{ bloque }}</strong></td>
-                  <td *ngFor="let dia of dias">
-                    <input type="checkbox"
-                          class="form-check-input"
-                          [checked]="disponibilidadSeleccionada[dia][bloque]"
-                          (change)="toggleBloque(dia, bloque)">
-                  </td>
-                </tr>
-
+                <td><strong>{{ bloque }}</strong></td>
+                <td *ngFor="let dia of dias">
+                  <input type="checkbox"
+                         class="form-check-input"
+                         [checked]="disponibilidadSeleccionada[dia][bloque] || false"
+                         disabled>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -108,10 +107,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
-        <button class="btn btn-success" (click)="guardarDisponibilidad()">
-          Guardar Disponibilidad
-        </button>
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
       </div>
     </div>
   </div>

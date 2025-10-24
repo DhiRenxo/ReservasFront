@@ -21,6 +21,7 @@ export class DocenteForm {
   @Output() onCancelar = new EventEmitter<void>();
 
   guardar() {
+    console.log('Datos enviados al guardar:', this.docente);
     this.onGuardar.emit(this.docente);
   }
 

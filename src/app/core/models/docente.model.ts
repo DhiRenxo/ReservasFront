@@ -3,6 +3,7 @@ export interface Docente {
   nombre: string;
   codigo: string;
   estado: boolean;
+  correo: string;
   tipocontrato: string;
   horassemanal: number;
   horasactual?: number;

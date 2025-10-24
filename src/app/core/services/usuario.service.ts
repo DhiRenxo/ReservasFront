@@ -46,4 +46,12 @@ export class UsuarioService {
       headers: this.getAuthHeaders()
     });
   }
+
+  actualizarCodigoDocente(id: number, codDocente: string): Observable<Usuario> {
+    const body = { cod_docente: codDocente };
+    return this.http.put<Usuario>(`${this.baseUrl}/${id}/cod-docente`, body, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
 }

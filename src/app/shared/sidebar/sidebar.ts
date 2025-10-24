@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output,  EventEmitter} from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter} from '@angular/core';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { Usuario } from '../../core/models/usuario.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -20,7 +20,8 @@ export class Sidebar implements OnInit {
   usuario!: Usuario;
   roles: Rol[] = [];
 
-  @Output() toggle = new EventEmitter<boolean>();
+  @Input() collapsed = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
 
  
   menu = [
@@ -29,9 +30,9 @@ export class Sidebar implements OnInit {
     { label: 'Reserva', icon: 'fas fa-calendar-alt', route: '/reserva' },
     { label: 'Docentes', icon: 'fas fa-chalkboard-teacher', route: '/app/docente' },
     { label: 'Asignación', icon: 'fas fa-random', expanded: false, items: [
-      {label: 'AsignacionCreacion', icon: 'fas fa-plus-circle', route:'/app/asignacioncreacion'},
-      { label: 'AsignacionDocente', icon: 'fas fa-user-tie', route: '/app/asignaciondoncente'},
-      { label: 'AsignacionValidacion', icon: 'fas fa-check-circle', route: '/app/asignacionvalidacion'}
+      {label: 'AsignacionCreacion', icon: 'fas fa-plus-circle', route:'/app/asignacion-creacion'},
+      { label: 'AsignacionDocente', icon: 'fas fa-user-tie', route: '/app/asignacion-docente'},
+      { label: 'AsignacionValidacion', icon: 'fas fa-check-circle', route: '/app/asignacion-validacion'}
     ] },
     { label: 'Horario', icon: 'fas fa-clock', route: '/horario' },
     { label: 'Ambiente', icon: 'fas fa-building', route: '/app/ambiente' },
@@ -79,7 +80,7 @@ export class Sidebar implements OnInit {
 
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;
-    this.toggle.emit(this.isCollapsed);
+    this.collapsedChange.emit(this.isCollapsed); 
   }
 
 }

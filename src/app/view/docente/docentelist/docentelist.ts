@@ -17,13 +17,14 @@ export class DocenteList {
   docentes = signal<Docente[]>([]);
   currentPage = signal(1);
   pageSize = 10;
+
   filtros = signal({
     nombre: '',
     codigo: '',
     tipocontrato: '',
     estado: '', // 'activo', 'inactivo' o ''
+    correo: '',
   });
-
 
   mostrarModal = signal(false);
   docenteActual = signal<Partial<Docente>>({});
@@ -37,20 +38,21 @@ export class DocenteList {
     this.docenteService.listar().subscribe({
       next: (data) => {
         this.docentes.set(data);
-        this.currentPage.set(1); // Reinicia a la primera página
+        this.currentPage.set(1);
       },
       error: (err) => console.error('Error al cargar docentes', err),
     });
   }
 
   get totalPages() {
-    const { nombre, codigo, tipocontrato, estado } = this.filtros();
+    const { nombre, codigo, tipocontrato, estado, correo } = this.filtros();
 
     const totalFiltrados = this.docentes().filter((d) => {
       return (
         d.nombre.toLowerCase().includes(nombre.toLowerCase()) &&
         d.codigo.toLowerCase().includes(codigo.toLowerCase()) &&
         d.tipocontrato.toLowerCase().includes(tipocontrato.toLowerCase()) &&
+        d.correo?.toLowerCase().includes(correo.toLowerCase()) &&
         (estado === '' ||
           (estado === 'activo' && d.estado) ||
           (estado === 'inactivo' && !d.estado))
@@ -61,28 +63,27 @@ export class DocenteList {
   }
 
   get docentesPaginados() {
-  const { nombre, codigo, tipocontrato, estado } = this.filtros();
+    const { nombre, codigo, tipocontrato, estado, correo } = this.filtros();
 
-  const filtrados = this.docentes().filter((d) => {
-    return (
-      d.nombre.toLowerCase().includes(nombre.toLowerCase()) &&
-      d.codigo.toLowerCase().includes(codigo.toLowerCase()) &&
-      d.tipocontrato.toLowerCase().includes(tipocontrato.toLowerCase()) &&
-      (estado === '' ||
-        (estado === 'activo' && d.estado) ||
-        (estado === 'inactivo' && !d.estado))
+    const filtrados = this.docentes().filter((d) => {
+      return (
+        d.nombre.toLowerCase().includes(nombre.toLowerCase()) &&
+        d.codigo.toLowerCase().includes(codigo.toLowerCase()) &&
+        d.tipocontrato.toLowerCase().includes(tipocontrato.toLowerCase()) &&
+        d.correo?.toLowerCase().includes(correo.toLowerCase()) &&
+        (estado === '' ||
+          (estado === 'activo' && d.estado) ||
+          (estado === 'inactivo' && !d.estado))
+      );
+    });
+
+    const ordenados = filtrados.sort((a, b) =>
+      a.nombre.localeCompare(b.nombre)
     );
-  });
 
-  const ordenados = filtrados.sort((a, b) =>
-    a.nombre.localeCompare(b.nombre)
-  );
-
-  const start = (this.currentPage() - 1) * this.pageSize;
-  return ordenados.slice(start, start + this.pageSize);
-}
-
-
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return ordenados.slice(start, start + this.pageSize);
+  }
 
   cambiarPagina(pagina: number) {
     if (pagina >= 1 && pagina <= this.totalPages) {
@@ -143,11 +144,10 @@ export class DocenteList {
   }
 
   actualizarFiltro(campo: keyof Docente, valor: string) {
-  this.filtros.set({
-    ...this.filtros(),
-    [campo]: valor,
-  });
-  this.currentPage.set(1);
-}
-
+    this.filtros.set({
+      ...this.filtros(),
+      [campo]: valor,
+    });
+    this.currentPage.set(1);
+  }
 }

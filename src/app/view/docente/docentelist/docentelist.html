@@ -1,41 +1,42 @@
 <div class="container mt-4">
   <h2>Lista de Docentes</h2>
   <button class="btn btn-success mb-3" (click)="nuevo()">Nuevo Docente</button>
-    <div class="row mb-3">
-  <div class="col-md-3">
-    <input type="text" class="form-control" placeholder="Buscar por nombre"
-      [value]="filtros().nombre"
-      (input)="actualizarFiltro('nombre', $any($event.target).value)" />
-  </div>
-  <div class="col-md-2">
-    <input type="text" class="form-control" placeholder="Buscar por código"
-      [value]="filtros().codigo"
-      (input)="actualizarFiltro('codigo', $any($event.target).value)" />
-  </div>
-  <div class="col-md-3">
-    <input type="text" class="form-control" placeholder="Buscar por tipo contrato"
-      [value]="filtros().tipocontrato"
-      (input)="actualizarFiltro('tipocontrato', $any($event.target).value)" />
-  </div>
-  <div class="col-md-2">
-    <select class="form-select"
-      [value]="filtros().estado"
-      (change)="actualizarFiltro('estado', $any($event.target).value)">
-      <option value="">Estado</option>
-      <option value="activo">Activo</option>
-      <option value="inactivo">Inactivo</option>
-    </select>
-  </div>
-</div>
 
+  <!-- Filtros -->
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <input type="text" class="form-control" placeholder="Buscar por nombre"
+        [value]="filtros().nombre"
+        (input)="actualizarFiltro('nombre', $any($event.target).value)" />
+    </div>
+    <div class="col-md-2">
+      <input type="text" class="form-control" placeholder="Buscar por código"
+        [value]="filtros().codigo"
+        (input)="actualizarFiltro('codigo', $any($event.target).value)" />
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control" placeholder="Buscar por tipo contrato"
+        [value]="filtros().tipocontrato"
+        (input)="actualizarFiltro('tipocontrato', $any($event.target).value)" />
+    </div>
+    <div class="col-md-2">
+      <select class="form-select"
+        [value]="filtros().estado"
+        (change)="actualizarFiltro('estado', $any($event.target).value)">
+        <option value="">Estado</option>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </div>
+  </div>
 
-
-
+  <!-- Tabla -->
   <table class="table table-bordered table-hover">
     <thead class="table-dark">
       <tr>
         <th>N°</th>
         <th>Nombre</th>
+        <th>Correo</th>
         <th>Código</th>
         <th>Contrato</th>
         <th>Horas Semanales</th>
@@ -48,6 +49,7 @@
       <tr *ngFor="let d of docentesPaginados; let i = index">
         <td>{{ (currentPage() - 1) * pageSize + i + 1 }}</td>
         <td>{{ d.nombre }}</td>
+        <td>{{ d.correo || '—' }}</td>
         <td>{{ d.codigo }}</td>
         <td>{{ d.tipocontrato }}</td>
         <td>{{ d.horassemanal }}</td>
@@ -65,7 +67,7 @@
     </tbody>
   </table>
 
-  <!-- Controles de paginación -->
+  <!-- Paginación -->
   <div *ngIf="totalPages > 1" class="d-flex justify-content-center align-items-center gap-2 mt-3">
     <button class="btn btn-outline-primary btn-sm"
             (click)="anteriorPagina()"

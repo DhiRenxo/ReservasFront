@@ -1,7 +1,10 @@
-<div class="app-container d-flex">
-  <app-sidebar></app-sidebar>
+<div class="layout" [class.collapsed]="isSidebarCollapsed">
+  <app-sidebar
+    [collapsed]="isSidebarCollapsed"
+    (collapsedChange)="toggleSidebar($event)">
+  </app-sidebar>
 
-  <div class="content flex-grow-1 overflow-auto">
+  <div class="content" [class.collapsed]="isSidebarCollapsed">
     <router-outlet></router-outlet>
   </div>
 </div>
