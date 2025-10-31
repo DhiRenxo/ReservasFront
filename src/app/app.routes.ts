@@ -6,11 +6,6 @@ import { HomeComponent } from './view/home/home.component';
 
 // Layout
 import { Layout } from './layout/layout/layout';
-
-// Usuarios y Docentes
-import { Usuariolist } from './view/usuario/usuariolist/usuariolist';
-import { DocenteList } from './view/docente/docentelist/docentelist';
-
 // Sección Académica
 import { Seccion } from './view/seccionacademica/seccion/seccion';
 import { Curso } from './view/seccionacademica/curso/curso';
@@ -49,10 +44,18 @@ export const routes: Routes = [
       { path: 'home', component: HomeComponent },
 
       // Usuarios
-      { path: 'usuarios', component: Usuariolist },
+      {
+        path: 'usuarios',
+        loadChildren: () => import('./view/usuario/usuario.routes').then(m => m.USUARIO_ROUTES)
+      },
+
+
 
       // Docentes
-      { path: 'docente', component: DocenteList },
+      { 
+        path: 'docente',
+        loadChildren: () => import('./view/docente/docente.routes').then(m => m.DOCENTE_ROUTES)
+       },
 
       // Sección académica
       { path: 'curso', component: Curso },

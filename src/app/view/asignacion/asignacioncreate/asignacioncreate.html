@@ -1,115 +1,269 @@
-<div class="container mt-4">
-  <h3>Gestión de Asignaciones</h3>
+<div class="p-6 max-w-[1400px] mx-auto">
+  <h3 class="text-3xl font-bold text-red-600 mb-8 text-center">
+    Gestión de Asignaciones
+  </h3>
 
-  <form (ngSubmit)="editMode ? updateAsignacion() : createAsignacion()" class="mb-4">
-    <div class="mb-2">
-      <label>Carrera:</label>
-      <select [(ngModel)]="asignacion.carreraid" name="carreraid" class="form-control" required>
-        <option value="" disabled selected>-- Seleccione Carrera --</option>
-        <option *ngFor="let carrera of carreras" [value]="carrera.id">
-          {{ carrera.nombre }} ({{ carrera.nomenglatura }})
-        </option>
-      </select>
-    </div>
+  <!-- GRID PRINCIPAL -->
+  <div class="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-8 items-start">
+    
+    <!-- FORMULARIO -->
+    <form
+      (ngSubmit)="editMode ? updateAsignacion() : createAsignacion()"
+      class="bg-white p-6 rounded-2xl shadow-xl border border-red-200 space-y-5"
+    >
+      <h4 class="text-lg font-semibold text-gray-800 text-center mb-4">
+        {{ editMode ? '✏️ Editar Asignación' : '➕ Crear Asignación' }}
+      </h4>
 
-    <div class="mb-2">
-      <label>Plan:</label>
-      <select [(ngModel)]="asignacion.plan" name="plan" class="form-control" required>
-        <option value="" disabled selected>-- Seleccione Plan --</option>
-        <option value="2019">2019</option>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-      </select>
-    </div>
-
-    <div class="mb-2">
-      <label>Ciclo:</label>
-      <select [(ngModel)]="asignacion.ciclo" name="ciclo" class="form-control" required>
-        <option value="" disabled selected>-- Seleccione Ciclo --</option>
-        <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
-      </select>
-    </div>
-
-    <div class="mb-2">
-      <label>Modalidad:</label>
-      <select [(ngModel)]="asignacion.modalidad" name="modalidad" class="form-control">
-        <option value="" disabled selected>-- Seleccione Modalidad --</option>
-        <option value="PRESENCIAL">Presencial</option>
-        <option value="DISTANCIA">Distancia</option>
-        <option value="SEMIPRESENCIAL">SemiPresencial</option>
-      </select>
-    </div>
-
-    <div class="mb-2">
-      <label>Fecha de Inicio:</label>
-      <input type="date" class="form-control" [(ngModel)]="asignacion.fecha_inicio" name="fecha_inicio" required>
-    </div>
-
-    <button type="submit" class="btn btn-success">
-      {{ editMode ? 'Actualizar' : 'Crear' }}
-    </button>
-    <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Cancelar</button>
-  </form>
-
-  <table class="table table-bordered table-hover">
-    <thead class="table-light">
-      <tr>
-        <th>ID</th>
-        <th>Carrera</th>
-        <th>Plan</th>
-        <th>Ciclo</th>
-        <th>Modalidad</th>
-        <th>Secciones</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let asig of asignaciones">
-        <td>{{ asig.id }}</td>
-        <td>{{ carreraMap[asig.carreraid] || '---' }}</td>
-        <td>{{ asig.plan }}</td>
-        <td>{{ asig.ciclo }}</td>
-        <td>{{ asig.modalidad }}</td>
-        <td>{{ asig.cantidad_secciones }}</td>
-        <td>
-          <span [class.text-success]="asig.estado" [class.text-danger]="!asig.estado">
-            {{ asig.estado ? 'Activo' : 'Inactivo' }}
-          </span>
-        </td>
-        <td>
-          <button class="btn btn-info btn-sm ms-2" (click)="openModal(asig)">Ver Cursos</button>
-          <button class="btn btn-warning btn-sm" (click)="editAsignacion(asig)">Editar</button>
-          <button class="btn btn-sm ms-2" [ngClass]="asig.estado ? 'btn-danger' : 'btn-success'" (click)="toggleEstado(asig)">
-            {{ asig.estado ? 'Inactivar' : 'Activar' }}
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="modal fade" id="cursoModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Detalle de Asignación</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      <div class="grid grid-cols-1 gap-4">
+        <!-- Carrera -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Carrera</label>
+          <select
+            [(ngModel)]="asignacion.carreraid"
+            name="carreraid"
+            required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-red-500 focus:outline-none transition"
+          >
+            <option value="" disabled selected>-- Seleccione Carrera --</option>
+            <option *ngFor="let carrera of carreras" [value]="carrera.id">
+              {{ carrera.nombre }} ({{ carrera.nomenglatura }})
+            </option>
+          </select>
         </div>
-        <div class="modal-body">
-          <p *ngIf="modalData"><strong>Carrera:</strong> {{ carreraMap[modalData.carreraid] }}</p>
-          <p><strong>Plan:</strong> {{ modalData?.plan }}</p>
-          <p><strong>Ciclo:</strong> {{ modalData?.ciclo }}</p>
-          <p><strong>Modalidad:</strong> {{ modalData?.modalidad }}</p>
 
-          <h6>Actualizar Cursos</h6>
-          <form (ngSubmit)="actualizarCursos()">
-            <div class="form-check" *ngFor="let curso of cursosModal">
-              <input class="form-check-input" type="checkbox" [id]="'curso-' + curso.id" [(ngModel)]="curso.selected" name="curso{{curso.id}}">
-              <label class="form-check-label" [for]="'curso-' + curso.id">{{ curso.codigo }} - {{ curso.nombre }}</label>
+        <!-- Plan -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Plan</label>
+          <select
+            [(ngModel)]="asignacion.plan"
+            name="plan"
+            required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-red-500 focus:outline-none transition"
+          >
+            <option value="" disabled selected>-- Seleccione Plan --</option>
+            <option value="2019">2019</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+
+        <!-- Ciclo -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Ciclo</label>
+          <select
+            [(ngModel)]="asignacion.ciclo"
+            name="ciclo"
+            required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-red-500 focus:outline-none transition"
+          >
+            <option value="" disabled selected>-- Seleccione Ciclo --</option>
+            <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <!-- Modalidad -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Modalidad</label>
+          <select
+            [(ngModel)]="asignacion.modalidad"
+            name="modalidad"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-red-500 focus:outline-none transition"
+          >
+            <option value="" disabled selected>-- Seleccione Modalidad --</option>
+            <option value="PRESENCIAL">Presencial</option>
+            <option value="DISTANCIA">Distancia</option>
+            <option value="SEMIPRESENCIAL">SemiPresencial</option>
+          </select>
+        </div>
+
+        <!-- Fecha de Inicio -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Fecha de Inicio</label>
+          <input
+            type="date"
+            [(ngModel)]="asignacion.fecha_inicio"
+            name="fecha_inicio"
+            required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:outline-none transition"
+          />
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+        <button
+          type="button"
+          (click)="resetForm()"
+          class="w-28 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="w-28 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md transition"
+        >
+          {{ editMode ? 'Actualizar' : 'Crear' }}
+        </button>
+      </div>
+    </form>
+
+    <!-- TABLA -->
+    <div class="bg-white shadow-xl rounded-2xl border border-gray-200 flex flex-col h-[680px]">
+      <div class="overflow-y-auto flex-grow rounded-t-2xl">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-red-600 text-white sticky top-0 shadow">
+            <tr>
+              <th class="px-4 py-2 text-center">ID</th>
+              <th class="px-4 py-2 text-center">Carrera</th>
+              <th class="px-4 py-2 text-center">Plan</th>
+              <th class="px-4 py-2 text-center">Ciclo</th>
+              <th class="px-4 py-2 text-center">Modalidad</th>
+              <th class="px-4 py-2 text-center">Secciones</th>
+              <th class="px-4 py-2 text-center">Estado</th>
+              <th class="px-4 py-2 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let asig of asignaciones | slice:(paginaActual-1)*10:(paginaActual)*10"
+              class="border-b hover:bg-red-50 transition text-center"
+            >
+              <td class="px-4 py-2">{{ asig.id }}</td>
+              <td class="px-4 py-2">{{ carreraMap[asig.carreraid] || '---' }}</td>
+              <td class="px-4 py-2">{{ asig.plan }}</td>
+              <td class="px-4 py-2">{{ asig.ciclo }}</td>
+              <td class="px-4 py-2">{{ asig.modalidad }}</td>
+              <td class="px-4 py-2">{{ asig.cantidad_secciones }}</td>
+              <td class="px-4 py-2">
+                <span [ngClass]="asig.estado ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'">
+                  {{ asig.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="px-4 py-2 space-x-1 flex justify-center">
+                <button
+                  class="w-20 py-1.5 text-xs rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition"
+                  (click)="openModal(asig)"
+                >
+                  Cursos
+                </button>
+                <button
+                  class="w-20 py-1.5 text-xs rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition"
+                  (click)="editAsignacion(asig)"
+                >
+                  Editar
+                </button>
+                <button
+                  class="w-20 py-1.5 text-xs rounded-lg text-white transition"
+                  [ngClass]="asig.estado ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
+                  (click)="toggleEstado(asig)"
+                >
+                  {{ asig.estado ? 'Inactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- FOOTER PAGINACIÓN -->
+      <footer class="flex justify-between items-center p-3 border-t text-sm text-gray-700 bg-gray-50 rounded-b-2xl">
+        <button
+          (click)="paginaAnterior()"
+          [disabled]="paginaActual === 1"
+          class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+        >
+          ◀ Anterior
+        </button>
+        <span class="font-medium">Página {{ paginaActual }} / {{ totalPaginas }}</span>
+        <button
+          (click)="paginaSiguiente()"
+          [disabled]="paginaActual >= totalPaginas"
+          class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+        >
+          Siguiente ▶
+        </button>
+      </footer>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div *ngIf="modalData" class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+  <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-red-300 overflow-hidden animate-fadeIn">
+    
+    <!-- CABECERA -->
+    <div class="flex justify-between items-center bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-4 shadow">
+      <h5 class="text-xl font-bold tracking-wide">📘 Detalle de Asignación</h5>
+      <button (click)="modalData = null" 
+              class="text-white hover:text-gray-200 text-2xl font-bold leading-none transition-transform hover:scale-110">
+        ×
+      </button>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="p-8 space-y-6">
+      <!-- INFORMACIÓN GENERAL -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <p class="text-gray-600 text-sm font-medium uppercase mb-1">Carrera</p>
+          <p class="text-gray-900 font-semibold text-base">
+            {{ carreraMap[modalData.carreraid] }}
+          </p>
+        </div>
+        <div>
+          <p class="text-gray-600 text-sm font-medium uppercase mb-1">Plan</p>
+          <p class="text-gray-900 font-semibold text-base">{{ modalData.plan }}</p>
+        </div>
+        <div>
+          <p class="text-gray-600 text-sm font-medium uppercase mb-1">Ciclo</p>
+          <p class="text-gray-900 font-semibold text-base">{{ modalData.ciclo }}</p>
+        </div>
+        <div>
+          <p class="text-gray-600 text-sm font-medium uppercase mb-1">Modalidad</p>
+          <p class="text-gray-900 font-semibold text-base">{{ modalData.modalidad }}</p>
+        </div>
+      </div>
+
+      <!-- SECCIÓN CURSOS -->
+      <div class="border-t border-gray-200 pt-5">
+        <h6 class="font-bold text-lg text-red-600 mb-3 flex items-center">
+          <span class="text-2xl mr-2">🎓</span> Actualizar Cursos
+        </h6>
+        
+        <form (ngSubmit)="actualizarCursos()" class="space-y-4">
+          <div class="max-h-64 overflow-y-auto pr-2 space-y-2">
+            <div *ngFor="let curso of cursosModal" class="flex items-center bg-gray-50 p-2 rounded-lg hover:bg-red-50 transition">
+              <input
+                class="w-4 h-4 accent-red-600 mr-3"
+                type="checkbox"
+                [id]="'curso-' + curso.id"
+                [(ngModel)]="curso.selected"
+                name="curso{{curso.id}}"
+              />
+              <label class="text-sm text-gray-800" [for]="'curso-' + curso.id">
+                <span class="font-semibold text-red-600">{{ curso.codigo }}</span> — {{ curso.nombre }}
+              </label>
             </div>
-            <button type="submit" class="btn btn-primary mt-2">Actualizar Cursos</button>
-          </form>
-        </div>
+          </div>
+
+          <!-- BOTONES -->
+          <div class="flex justify-end pt-4 space-x-3 border-t border-gray-200">
+            <button
+              type="button"
+              (click)="modalData = null"
+              class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+            >
+              Cerrar
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold shadow-md transition"
+            >
+              💾 Guardar Cambios
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

@@ -1,24 +1,81 @@
-<h2>{{ editando ? 'Editar Usuario' : 'Crear Usuario' }}</h2>
-<form [formGroup]="usuarioForm" (ngSubmit)="guardar()">
-  <div class="mb-3">
-    <label for="nombre" class="form-label">Nombre:</label>
-    <input id="nombre" class="form-control" formControlName="nombre" />
+<!-- MODAL -->
+<div class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 border border-red-200 animate-fadeIn">
+
+    <!-- Header -->
+    <h2 class="text-2xl font-bold text-red-600 mb-6 text-center">
+      {{ editando ? '✏️ Editar Usuario' : '➕ Crear Usuario' }}
+    </h2>
+
+    <!-- Formulario -->
+    <form [formGroup]="usuarioForm" (ngSubmit)="guardar()" class="space-y-5">
+
+      <!-- Nombre -->
+      <div>
+        <label for="nombre" class="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+        <input
+          id="nombre"
+          formControlName="nombre"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none transition"
+          placeholder="Ingresa el nombre"
+        />
+      </div>
+
+      <!-- Correo -->
+      <div>
+        <label for="correo" class="block text-sm font-semibold text-gray-700 mb-1">Correo</label>
+        <input
+          id="correo"
+          formControlName="correo"
+          type="email"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none transition"
+          placeholder="ejemplo@correo.com"
+        />
+      </div>
+
+      <!-- Rol -->
+      <div>
+        <label for="rolid" class="block text-sm font-semibold text-gray-700 mb-1">Rol</label>
+        <select
+          id="rolid"
+          formControlName="rolid"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-red-400 focus:outline-none transition"
+        >
+          <option value="" disabled selected>Seleccione un rol</option>
+          <option *ngFor="let rol of roles" [value]="rol.id">
+            {{ rol.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Estado -->
+      <div class="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="estado"
+          formControlName="estado"
+          class="w-4 h-4 accent-red-600 focus:ring-2 focus:ring-red-400"
+        />
+        <label for="estado" class="text-sm text-gray-700">Activo</label>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end space-x-3 pt-4">
+        <button
+          type="button"
+          (click)="cerrar.emit()"
+          class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400 transition"
+        >
+          Guardar
+        </button>
+      </div>
+
+    </form>
   </div>
-  <div class="mb-3">
-    <label for="correo" class="form-label">Correo:</label>
-    <input id="correo" class="form-control" formControlName="correo" />
-  </div>
-  <div class="mb-3">
-    <label for="rolid" class="form-label">Rol:</label>
-    <select id="rolid" class="form-select" formControlName="rolid">
-      <option value="" disabled>Seleccione un rol</option>
-      <option *ngFor="let rol of roles" [value]="rol.id">{{ rol.nombre }}</option>
-    </select>
-  </div>
-  <div class="form-check mb-3">
-    <input type="checkbox" id="estado" class="form-check-input" formControlName="estado" />
-    <label for="estado" class="form-check-label">Activo</label>
-  </div>
-  <button type="submit" class="btn btn-primary me-2">Guardar</button>
-  <button type="button" class="btn btn-secondary" (click)="cerrar.emit()">Cancelar</button>
-</form>
+</div>

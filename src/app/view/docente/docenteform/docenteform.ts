@@ -7,7 +7,8 @@ import { Docente } from '../../../core/models/docente.model';
   selector: 'app-docente-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './docenteform.html'
+  templateUrl: './docenteform.html',
+  styleUrl: './docenteform.css'
 })
 export class DocenteForm {
   @Input() docente: Partial<Docente> = {

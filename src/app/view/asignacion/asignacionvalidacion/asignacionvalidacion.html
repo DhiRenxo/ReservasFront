@@ -18,8 +18,10 @@
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
-          <tr *ngFor="let curso of cursosPorAsignacion[asig.id]">
+        <ng-container *ngFor="let curso of cursosPorAsignacion[asig.id]">
+          <tr *ngIf="!curso.es_bloque || (curso.es_bloque && curso.activo)">
             <td>
               {{ curso.curso_id && cursosMap[curso.curso_id] 
                   ? cursosMap[curso.curso_id].nombre 
@@ -38,13 +40,23 @@
               </button>
             </td>
           </tr>
-        </tbody>
+        </ng-container>
+      </tbody>
+
       </table>
+
+      <!-- ✅ Botón de notificación agregado aquí -->
+      <button class="btn btn-success btn-sm mt-2"
+              (click)="enviarCorreos(asig.id)">
+        📩 Notificar Docentes
+      </button>
+
     </div>
   </div>
 </div>
 
-<!-- Modal solo lectura con selección de modalidad y turno -->
+
+<!-- ✅ Modal solo lectura -->
 <div class="modal fade show" tabindex="-1" role="dialog" *ngIf="mostrarModal" style="display:block;">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content shadow-lg">
@@ -59,21 +71,22 @@
         <div class="row mb-3">
           <div class="col-auto">
             <label class="fw-bold me-2">Modalidad:</label>
-            <select [(ngModel)]="modalidadSeleccionada"
-                    (ngModelChange)="seleccionarModalidad($event)"
-                    class="form-select">
+            <select class="form-select"
+                    [value]="modalidadSeleccionada"
+                    (change)="seleccionarModalidad($any($event.target).value)">
               <option value="PRESENCIAL">PRESENCIAL</option>
               <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
               <option value="DISTANCIA">DISTANCIA</option>
             </select>
           </div>
 
-          <!-- Selección de turno -->
+          <!-- Turno -->
           <div class="col-auto">
             <label class="fw-bold me-2">Turno:</label>
-            <select [(ngModel)]="turnoSeleccionado"
-                    (ngModelChange)="seleccionarTurno($event)"
-                    class="form-select">
+            <select class="form-select"
+                    [value]="turnoSeleccionado ?? ''"
+                    (change)="seleccionarTurno($any($event.target).value)">
+              <option value="" disabled>Seleccionar</option>
               <option *ngFor="let turno of getTurnosDisponibles()" [value]="turno">
                 {{ turno }}
               </option>
@@ -81,28 +94,30 @@
           </div>
         </div>
 
-        <!-- Horario estilo matriz solo lectura -->
-        <div class="table-responsive">
-          <table class="table table-bordered align-middle text-center">
-            <thead class="table-light">
+        <!-- 📌 Matriz visual de disponibilidad -->
+        <div class="table-responsive mt-3">
+          <table class="table table-bordered align-middle text-center disponibilidad-table">
+            <thead class="table-primary">
               <tr>
                 <th>Hora</th>
                 <th *ngFor="let dia of dias">{{ dia }}</th>
               </tr>
             </thead>
+
             <tbody>
               <tr *ngFor="let bloque of (turnoSeleccionado ? generarBloques(turnoSeleccionado) : [])">
-                <td><strong>{{ bloque }}</strong></td>
-                <td *ngFor="let dia of dias">
-                  <input type="checkbox"
-                         class="form-check-input"
-                         [checked]="disponibilidadSeleccionada[dia][bloque] || false"
-                         disabled>
+                <td class="fw-bold bg-light">{{ bloque }}</td>
+
+                <td *ngFor="let dia of dias"
+                    [class.slot-disponible]="disponibilidadSeleccionada[dia][bloque]"
+                    [class.slot-vacio]="!disponibilidadSeleccionada[dia][bloque]">
+
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
 
       </div>
 

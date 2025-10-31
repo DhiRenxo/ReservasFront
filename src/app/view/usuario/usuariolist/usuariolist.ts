@@ -17,7 +17,7 @@ import localeEs from '@angular/common/locales/es';
   standalone: true,
   imports: [CommonModule, RouterModule, Usuarioform, FormsModule],
   templateUrl: './usuariolist.html',
-  styleUrls: ['./usuariolist.scss'],
+  styleUrls: ['./usuariolist.css'],
 })
 export class Usuariolist implements OnInit {
   usuarios: Usuario[] = [];
@@ -101,16 +101,11 @@ export class Usuariolist implements OnInit {
     }
   }
 
-  formatearFecha(fecha: string | undefined): string {
-    console.log('Fecha a formatear:', fecha);
-    if (!fecha) return '';
-    try {
-      return formatDate(fecha, 'dd/MM/yyyy', 'es-ES');
-    } catch (error) {
-      console.error('Error formateando la fecha:', fecha, error);
-      return '';
-    }
-  }
+  formatearFecha(fecha?: string | null): string {
+  if (!fecha) return '-';
+  return new Date(fecha).toLocaleDateString();
+}
+
 
   
 

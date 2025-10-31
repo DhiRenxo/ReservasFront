@@ -1,101 +1,168 @@
-<div class="container mt-4">
-  <h2>Lista de Docentes</h2>
-  <button class="btn btn-success mb-3" (click)="nuevo()">Nuevo Docente</button>
-
-  <!-- Filtros -->
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <input type="text" class="form-control" placeholder="Buscar por nombre"
-        [value]="filtros().nombre"
-        (input)="actualizarFiltro('nombre', $any($event.target).value)" />
-    </div>
-    <div class="col-md-2">
-      <input type="text" class="form-control" placeholder="Buscar por código"
-        [value]="filtros().codigo"
-        (input)="actualizarFiltro('codigo', $any($event.target).value)" />
-    </div>
-    <div class="col-md-3">
-      <input type="text" class="form-control" placeholder="Buscar por tipo contrato"
-        [value]="filtros().tipocontrato"
-        (input)="actualizarFiltro('tipocontrato', $any($event.target).value)" />
-    </div>
-    <div class="col-md-2">
-      <select class="form-select"
-        [value]="filtros().estado"
-        (change)="actualizarFiltro('estado', $any($event.target).value)">
-        <option value="">Estado</option>
-        <option value="activo">Activo</option>
-        <option value="inactivo">Inactivo</option>
-      </select>
-    </div>
+<div class="main-container p-6 bg-white min-h-screen rounded-2xl shadow-xl">
+  <!-- ENCABEZADO -->
+  <div
+    class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 shadow-sm p-4 rounded-lg bg-red-50 border border-red-100"
+  >
+    <h2 class="text-2xl font-bold text-red-700">Lista de Docentes</h2>
+    <button
+      (click)="nuevo()"
+      class="mt-3 sm:mt-0 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+    >
+      <i class="fas fa-user-plus"></i> Nuevo Docente
+    </button>
   </div>
 
-  <!-- Tabla -->
-  <table class="table table-bordered table-hover">
-    <thead class="table-dark">
-      <tr>
-        <th>N°</th>
-        <th>Nombre</th>
-        <th>Correo</th>
-        <th>Código</th>
-        <th>Contrato</th>
-        <th>Horas Semanales</th>
-        <th>Horas Actual</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let d of docentesPaginados; let i = index">
-        <td>{{ (currentPage() - 1) * pageSize + i + 1 }}</td>
-        <td>{{ d.nombre }}</td>
-        <td>{{ d.correo || '—' }}</td>
-        <td>{{ d.codigo }}</td>
-        <td>{{ d.tipocontrato }}</td>
-        <td>{{ d.horassemanal }}</td>
-        <td>{{ d.horasactual }}</td>
-        <td>
-          <span [ngClass]="d.estado ? 'text-success' : 'text-danger'">
-            {{ d.estado ? 'Activo' : 'Inactivo' }}
-          </span>
-        </td>
-        <td>
-          <button class="btn btn-warning btn-sm" (click)="editar(d)">Editar</button>
-          <button class="btn btn-danger btn-sm ms-2" (click)="eliminar(d.id)">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- FILTROS -->
+  <div
+    class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 shadow-sm p-4 rounded-lg bg-white border border-gray-100"
+  >
+    <input
+      type="text"
+      placeholder="Buscar por nombre"
+      class="border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+      [value]="filtros().nombre"
+      (input)="actualizarFiltro('nombre', $any($event.target).value)"
+    />
 
-  <!-- Paginación -->
-  <div *ngIf="totalPages > 1" class="d-flex justify-content-center align-items-center gap-2 mt-3">
-    <button class="btn btn-outline-primary btn-sm"
-            (click)="anteriorPagina()"
-            [disabled]="currentPage() === 1">
+    <input
+      type="text"
+      placeholder="Buscar por código"
+      class="border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+      [value]="filtros().codigo"
+      (input)="actualizarFiltro('codigo', $any($event.target).value)"
+    />
+
+    <input
+      type="text"
+      placeholder="Buscar por tipo de contrato"
+      class="border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+      [value]="filtros().tipocontrato"
+      (input)="actualizarFiltro('tipocontrato', $any($event.target).value)"
+    />
+
+    <select
+      class="border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+      [value]="filtros().estado"
+      (change)="actualizarFiltro('estado', $any($event.target).value)"
+    >
+      <option value="">Estado</option>
+      <option value="activo">Activo</option>
+      <option value="inactivo">Inactivo</option>
+    </select>
+  </div>
+
+  <!-- TABLA -->
+  <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-lg bg-white">
+    <table class="min-w-full text-sm text-gray-800 rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-red-600 text-white text-left shadow-sm">
+          <th class="py-3 px-4">#</th>
+          <th class="py-3 px-4">Nombre</th>
+          <th class="py-3 px-4">Correo</th>
+          <th class="py-3 px-4">Código</th>
+          <th class="py-3 px-4">Contrato</th>
+          <th class="py-3 px-4">Horas Semanales</th>
+          <th class="py-3 px-4">Horas Actual</th>
+          <th class="py-3 px-4">Estado</th>
+          <th class="py-3 px-4 text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let d of docentesPaginados; let i = index"
+          class="hover:bg-red-50 transition-all border-b border-gray-100 hover:shadow-sm"
+        >
+          <td class="py-3 px-4 font-medium">
+            {{ (currentPage() - 1) * pageSize + i + 1 }}
+          </td>
+          <td class="py-3 px-4">{{ d.nombre }}</td>
+          <td class="py-3 px-4">{{ d.correo || '—' }}</td>
+          <td class="py-3 px-4">{{ d.codigo }}</td>
+          <td class="py-3 px-4">{{ d.tipocontrato }}</td>
+          <td class="py-3 px-4">{{ d.horassemanal }}</td>
+          <td class="py-3 px-4">{{ d.horasactual }}</td>
+          <td class="py-3 px-4">
+            <span
+              class="font-semibold"
+              [ngClass]="d.estado ? 'text-green-600' : 'text-red-600'"
+            >
+              {{ d.estado ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-center">
+            <button
+              class="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-3 py-1 rounded-md shadow-sm hover:shadow-md mr-2 transition"
+              (click)="editar(d)"
+            >
+              Editar
+            </button>
+            <button
+              class="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded-md shadow-sm hover:shadow-md transition"
+              (click)="eliminar(d.id)"
+            >
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINACIÓN -->
+  <div *ngIf="totalPages > 1" class="flex justify-center items-center gap-2 mt-5">
+    <button
+      class="px-3 py-1 border border-red-500 text-red-600 rounded-md hover:bg-red-50 transition disabled:opacity-50"
+      (click)="anteriorPagina()"
+      [disabled]="currentPage() === 1"
+    >
       Anterior
     </button>
 
-    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
-      <button class="btn btn-sm"
-              [ngClass]="{ 'btn-primary': currentPage() === i + 1, 'btn-outline-primary': currentPage() !== i + 1 }"
-              (click)="cambiarPagina(i + 1)">
-        {{ i + 1 }}
-      </button>
-    </ng-container>
+    <button
+      *ngFor="let page of [].constructor(totalPages); let i = index"
+      (click)="cambiarPagina(i + 1)"
+      class="px-3 py-1 rounded-md font-semibold transition"
+      [ngClass]="
+        currentPage() === i + 1
+          ? 'bg-red-600 text-white shadow-md'
+          : 'border border-red-300 text-red-600 hover:bg-red-50'
+      "
+    >
+      {{ i + 1 }}
+    </button>
 
-    <button class="btn btn-outline-primary btn-sm"
-            (click)="siguientePagina()"
-            [disabled]="currentPage() === totalPages">
+    <button
+      class="px-3 py-1 border border-red-500 text-red-600 rounded-md hover:bg-red-50 transition disabled:opacity-50"
+      (click)="siguientePagina()"
+      [disabled]="currentPage() === totalPages"
+    >
       Siguiente
     </button>
   </div>
-</div>
 
-<!-- Modal -->
-<app-docente-form
-  *ngIf="mostrarModal()"
-  [docente]="docenteActual()"
-  [esEdicion]="esEdicion()"
-  (onGuardar)="guardar($event)"
-  (onCancelar)="cancelarModal()"
-></app-docente-form>
+  <!-- MODAL -->
+  <div
+    *ngIf="mostrarModal()"
+    class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+  >
+    <div
+      class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 animate-fadeIn border border-red-100"
+    >
+      <div class="flex justify-between items-center border-b pb-3 mb-4">
+        <h5 class="text-lg font-semibold text-gray-800">
+          {{ esEdicion() ? 'Editar Docente' : 'Nuevo Docente' }}
+        </h5>
+        <button (click)="cancelarModal()" class="text-gray-500 hover:text-red-600 transition">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+
+      <app-docente-form
+        [docente]="docenteActual()"
+        [esEdicion]="esEdicion()"
+        (onGuardar)="guardar($event)"
+        (onCancelar)="cancelarModal()"
+      ></app-docente-form>
+    </div>
+  </div>
+</div>

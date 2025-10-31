@@ -1,0 +1,33 @@
+.layout {
+  transition: all 0.3s ease;
+}
+
+.sidebar {
+  width: 16rem; /* 256px */
+}
+
+.content {
+  transition: margin-left 0.3s ease, transform 0.3s ease;
+}
+
+/* Ocultar sidebar cuando está colapsado en desktop */
+.layout.collapsed .sidebar {
+  width: 4rem;
+}
+
+/* Responsivo */
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.translate-x-0 {
+    transform: translateX(0);
+  }
+
+  .content {
+    margin-left: 0 !important;
+  }
+}

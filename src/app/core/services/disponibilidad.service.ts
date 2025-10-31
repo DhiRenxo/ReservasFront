@@ -70,4 +70,15 @@ export class DisponibilidadService {
       { headers: this.getAuthHeaders() }
     );
   }
+
+  getByDocente(docenteId: number, modalidad: string, turno: string): Observable<DisponibilidadDocenteResponse[]> {
+    return this.http.get<DisponibilidadDocenteResponse[]>(
+      `${this.apiUrl}/docente/${docenteId}?modalidad=${modalidad}&turno=${turno}`
+    );
+  }
+
+  // Crear o actualizar disponibilidad
+  createOrUpdate(payload: DisponibilidadDocenteCreate): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}`, payload);
+  }
 }

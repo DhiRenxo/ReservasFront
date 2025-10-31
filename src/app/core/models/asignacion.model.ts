@@ -50,6 +50,7 @@ export interface AsignacionCursoDocenteBase {
   duplica_horas?: boolean;
   comentario?: string | null;
   disponibilidad?: string | null;
+  activo?: boolean;
 }
 
 export interface AsignacionCursoDocenteCreate extends AsignacionCursoDocenteBase {}
@@ -86,4 +87,19 @@ export interface AsignacionCursoDocenteUpdate {
   es_bloque?: boolean;
   bloque?: string | null;    
   duplica_horas?: boolean;
+}
+
+export interface CursosAsignadosDocenteResponse {
+  docente_id: number;
+  asignacion_id: number;
+  carreraid: number;
+  carrera_nombre: string | null; 
+  plan: string;
+  ciclo: string;
+  modalidad: string;
+  curso_id: number;
+  curso_nombre: string;
+  seccion: number;
+  activo: boolean;
+  docente_nombre: string;
 }

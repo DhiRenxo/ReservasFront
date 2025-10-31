@@ -13,7 +13,8 @@ import {
   CursosUpdate,
   DocenteUpdate,
   AsignacionCursoDocenteComentarioUpdate,
-  AsignacionCursoDocenteUpdate
+  AsignacionCursoDocenteUpdate,
+  CursosAsignadosDocenteResponse
 } from '../models/asignacion.model';
 
 @Injectable({
@@ -155,5 +156,14 @@ export class AsignacionService {
   desactivarBloque(relacionId: number) {
     return this.http.put<any>(`${this.apiUrl}/relaciones/${relacionId}/desactivar-bloque`, {});
   }
+
+  
+    obtenerCursosDocente(correo: string): Observable<CursosAsignadosDocenteResponse[]> {
+      return this.http.get<CursosAsignadosDocenteResponse[]>(
+        `${this.apiUrl}/docente/${correo}`,
+        { headers: this.getAuthHeaders() }
+      );
+    }
+
 
 }

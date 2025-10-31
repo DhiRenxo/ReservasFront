@@ -4,29 +4,23 @@ import { DisponibilidadService } from '../../../core/services/disponibilidad.ser
 import { CursoService } from '../../../core/services/curso.service';
 import { DocenteService } from '../../../core/services/docente.service';
 import { CarreraService } from '../../../core/services/carrera.service';
-import { 
-  DisponibilidadDocenteResponse, 
-  DisponibilidadDocenteCreate, 
-  DisponibilidadDocenteUpdate, 
-  Horario, 
-  Modalidad, 
-  Turno 
-} from '../../../core/models/disponibilidad.model';
+import { NotificacionService } from '../../../core/services/notificacion.service';
+import { DisponibilidadDocenteResponse, Horario, Modalidad, Turno } from '../../../core/models/disponibilidad.model';
 import { AsignacionResponse, AsignacionCursoDocenteResponse } from '../../../core/models/asignacion.model';
 import { CursoModel } from '../../../core/models/Curso.model';
 import { Docente } from '../../../core/models/docente.model';
 import { CarreraModel } from '../../../core/models/carrera.model';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-asignacionvalidacion',
+  standalone: true,
   templateUrl: './asignacionvalidacion.html',
   styleUrls: ['./asignacionvalidacion.scss'],
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule]
 })
-export class Asignacionvalidacion implements OnInit {  
+export class Asignacionvalidacion implements OnInit {
+
   asignaciones: AsignacionResponse[] = [];
   cursosPorAsignacion: { [key: number]: AsignacionCursoDocenteResponse[] } = {};
 
@@ -34,25 +28,22 @@ export class Asignacionvalidacion implements OnInit {
   docentesMap: { [id: number]: Docente } = {};
   carrerasMap: { [id: number]: CarreraModel } = {};
 
-  mostrarModal: boolean = false;
+  mostrarModal = false;
   docenteSeleccionadoId: number | null = null;
-  tieneDisponibilidad: boolean = false;
 
   modalidadSeleccionada: Modalidad = 'PRESENCIAL';
   turnoSeleccionado: Turno | null = null;
 
   dias: string[] = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  bloques: string[] = [];
   disponibilidadSeleccionada: { [dia: string]: { [bloque: string]: boolean } } = {};
-
-
 
   constructor(
     private asignacionService: AsignacionService,
     private disponibilidadService: DisponibilidadService,
     private cursoService: CursoService,
     private docenteService: DocenteService,
-    private carreraService: CarreraService
+    private carreraService: CarreraService,
+    private notificacionService: NotificacionService
   ) {}
 
   ngOnInit(): void {
@@ -60,160 +51,209 @@ export class Asignacionvalidacion implements OnInit {
     this.cargarAsignaciones();
   }
 
-
   cargarCatalogos() {
     this.cursoService.getAll().subscribe(cursos => {
+      console.log("✅ Cursos recibidos:", cursos);
       this.cursosMap = cursos.reduce((acc, c) => ({ ...acc, [c.id!]: c }), {});
-    });
+    }, err => console.error("❌ Error cursos:", err));
+
     this.docenteService.listar().subscribe(docentes => {
+      console.log("✅ Docentes recibidos:", docentes);
       this.docentesMap = docentes.reduce((acc, d) => ({ ...acc, [d.id!]: d }), {});
-    });
+    }, err => console.error("❌ Error docentes:", err));
+
     this.carreraService.listar().subscribe(carreras => {
+      console.log("✅ Carreras recibidas:", carreras);
       this.carrerasMap = carreras.reduce((acc, c) => ({ ...acc, [c.id!]: c }), {});
-    });
+    }, err => console.error("❌ Error carreras:", err));
   }
 
   cargarAsignaciones() {
     this.asignacionService.getAll().subscribe(asignaciones => {
-      this.asignaciones = asignaciones.filter(a => a.estado); 
+      console.log("✅ Asignaciones recibidas:", asignaciones);
+      this.asignaciones = asignaciones.filter(a => a.estado);
       this.asignaciones.forEach(a => this.cargarRelaciones(a.id));
-    });
+    }, err => console.error("❌ Error asignaciones:", err));
   }
 
   cargarRelaciones(asignacionId: number) {
-    this.asignacionService.getRelaciones(asignacionId).subscribe(relaciones => {
-      this.cursosPorAsignacion[asignacionId] = relaciones.filter(r => r.docente_id);
-    });
-  }
+  this.asignacionService.getRelaciones(asignacionId).subscribe(relaciones => {
+    console.log(`📌 Relaciones asignación ${asignacionId}:`, relaciones);
 
-  // --- solo funciones relacionadas con disponibilidad actualizadas ---
-
-    abrirModal(docente_id: number, modalidad: string) {
-      this.docenteSeleccionadoId = docente_id;
-      this.modalidadSeleccionada = modalidad as Modalidad;
-      this.turnoSeleccionado = null;
-      this.bloques = [];
-      this.mostrarModal = true;
-
-      this.inicializarDisponibilidad();
-
-      // Obtener disponibilidades del docente según modalidad
-      this.disponibilidadService
-        .getDisponibilidadesDocente(docente_id, this.modalidadSeleccionada)
-        .subscribe((disponibilidades: DisponibilidadDocenteResponse[]) => {
-          this.tieneDisponibilidad = disponibilidades.length > 0;
-
-          if (this.tieneDisponibilidad) {
-            disponibilidades.forEach((d: DisponibilidadDocenteResponse) => {
-              d.horarios.forEach((h: Horario) => {
-                const bloque = `${h.hora_inicio}-${h.hora_fin}`;
-                this.disponibilidadSeleccionada[d.dia] = this.disponibilidadSeleccionada[d.dia] || {};
-                this.disponibilidadSeleccionada[d.dia][bloque] = true;
-              });
-            });
-          }
-        }, (error: any) => {
-          console.error('Error al obtener disponibilidades:', error);
-          this.tieneDisponibilidad = false;
-        });
+    // Filtrar solo cursos con docente asignado
+    this.cursosPorAsignacion[asignacionId] = relaciones
+      .filter(r => r.docente_id)
+      .map(r => ({
+        ...r,
+        activo: !!r.activo,    // inicializamos activo
+        es_bloque: r.es_bloque ?? false
+      }));
+  }, err => console.error(`❌ Error relaciones ${asignacionId}:`, err));
 }
 
-    cerrarModal() {
-      this.mostrarModal = false;
-      this.docenteSeleccionadoId = null;
-      this.turnoSeleccionado = null;
-      this.bloques = [];
-      this.tieneDisponibilidad = false;
-    }
 
-    inicializarDisponibilidad() {
-      this.disponibilidadSeleccionada = {};
-      this.dias.forEach(dia => this.disponibilidadSeleccionada[dia] = {});
-    }
+  abrirModal(docente_id: number, modalidad: string) {
+    this.docenteSeleccionadoId = docente_id;
+    this.modalidadSeleccionada = modalidad as Modalidad;
 
-    // generar bloques según modalidad y turno (sin cambios)
-    generarBloques(turno: Turno, dia?: string): string[] {
-      const bloques = {
-        Mañana: ['7:15-8:00','08:00-08:45','08:45-09:30','09:30-10:15','10:15-11:00','11:00-11:45','11:45-12:30','12:30-13:15'],
-        Tarde: ['13:15-14:00','14:00-14:45','14:45-15:30','15:30-16:15','16:15-17:00','17:00-17:45'],
-        Noche: ['18:00-18:45','18:45-19:30','19:30-20:15','20:15-21:00','21:00-21:45','21:45-22:30']
-      };
+    // ✅ Aquí seteamos turno por defecto = Mañana
+    this.turnoSeleccionado = 'Mañana';
 
-      if (this.modalidadSeleccionada === 'PRESENCIAL') return bloques[turno];
-      if (this.modalidadSeleccionada === 'DISTANCIA') return turno === 'Noche' ? ['19:30-20:15','20:15-21:00','21:00-21:45','21:45-22:30'] : [];
-      if (this.modalidadSeleccionada === 'SEMIPRESENCIAL') {
-        if (dia === 'Domingo') return turno === 'Mañana' ? bloques.Mañana : [];
-        if (dia === 'Sábado') return bloques[turno];
-        return turno === 'Noche' ? bloques.Noche : [];
-      }
-      return [];
-    }
+    this.inicializarDisponibilidad();
+    this.mostrarModal = true;
+    this.obtenerDisponibilidades();
+  }
 
-    // seleccionar turno solo para mostrar bloques, sin permitir cambios
-    seleccionarTurno(turno: Turno) {
-      this.turnoSeleccionado = turno;
-      this.bloques = this.generarBloques(turno);
-      this.inicializarDisponibilidad();
 
-      if (!this.docenteSeleccionadoId) return;
+  cerrarModal() {
+    this.mostrarModal = false;
+    this.docenteSeleccionadoId = null;
+    this.turnoSeleccionado = null;
+    this.inicializarDisponibilidad();
+  }
 
-      this.disponibilidadService
-        .getDisponibilidadesDocente(this.docenteSeleccionadoId, this.modalidadSeleccionada, turno)
-        .subscribe((disponibilidades: DisponibilidadDocenteResponse[]) => {
-          this.tieneDisponibilidad = disponibilidades.length > 0;
+  inicializarDisponibilidad() {
+    this.disponibilidadSeleccionada = {};
+    this.dias.forEach(dia => this.disponibilidadSeleccionada[dia] = {});
+  }
 
-          disponibilidades.forEach((d: DisponibilidadDocenteResponse) => {
+  obtenerDisponibilidades() {
+    if (!this.docenteSeleccionadoId || !this.turnoSeleccionado) return;
+
+    this.disponibilidadService
+      .getDisponibilidadesDocente(this.docenteSeleccionadoId, this.modalidadSeleccionada, this.turnoSeleccionado)
+      .subscribe(
+        disponibilidades => {
+          console.log("✅ Disponibilidades desde API:", disponibilidades);
+
+          disponibilidades.forEach(d => {
             d.horarios.forEach((h: Horario) => {
-              const bloque = `${h.hora_inicio}-${h.hora_fin}`;
-              this.disponibilidadSeleccionada[d.dia] = this.disponibilidadSeleccionada[d.dia] || {};
+
+              const inicio = h.hora_inicio.slice(0, 5).replace(/^0/, ''); // "07:15" → "7:15"
+              const fin = h.hora_fin.slice(0, 5).replace(/^0/, '');       // "08:00" → "8:00"
+
+              const bloque = `${inicio}-${fin}`;
+
+              if (!this.disponibilidadSeleccionada[d.dia]) {
+                this.disponibilidadSeleccionada[d.dia] = {};
+              }
+
               this.disponibilidadSeleccionada[d.dia][bloque] = true;
             });
           });
-        }, (error: any) => {
-          console.error('Error al obtener disponibilidades:', error);
-          this.tieneDisponibilidad = false;
+
+          console.log("📌 disponibilidadSeleccionada:", this.disponibilidadSeleccionada);
+        }
+      );
+  }
+
+
+  seleccionarModalidad(modalidad: Modalidad) {
+    console.log("🎯 seleccionarModalidad:", modalidad);
+    this.modalidadSeleccionada = modalidad;
+    this.turnoSeleccionado = null;
+    this.inicializarDisponibilidad();
+    this.obtenerDisponibilidades();
+  }
+
+  seleccionarTurno(turno: Turno) {
+    console.log("🎯 seleccionarTurno:", turno);
+    this.turnoSeleccionado = turno;
+    this.inicializarDisponibilidad();
+    this.obtenerDisponibilidades();
+  }
+
+  generarBloques(turno: Turno): string[] {
+    const bloques = {
+      Mañana: [
+        '7:15-8:00','8:00-8:45','8:45-9:30','9:30-10:15',
+        '10:15-11:00','11:00-11:45','11:45-12:30','12:30-13:15'
+      ],
+      Tarde: [
+        '13:15-14:00','14:00-14:45','14:45-15:30','15:30-16:15',
+        '16:15-17:00','17:00-17:45'
+      ],
+      Noche: [
+        '18:00-18:45','18:45-19:30','19:30-20:15','20:15-21:00',
+        '21:00-21:45','21:45-22:30'
+      ]
+    };
+
+    return bloques[turno];
+  }
+
+  getTurnosDisponibles(): Turno[] {
+    if (this.modalidadSeleccionada === 'PRESENCIAL') return ['Mañana', 'Tarde', 'Noche'];
+    if (this.modalidadSeleccionada === 'DISTANCIA') return ['Noche'];
+    if (this.modalidadSeleccionada === 'SEMIPRESENCIAL') return ['Noche'];
+    return [];
+  }
+
+  enviarCorreos(asignacionId: number) {
+    if (!confirm("¿Seguro que deseas notificar a los docentes asignados?")) return;
+
+    this.notificacionService.enviarNotificacionAsignacion(asignacionId)
+      .subscribe({
+        next: (resp) => {
+          console.log("✅ Notificación enviada:", resp);
+          alert(`✅ Correos enviados a ${resp.docentes_notificados} docente(s).`);
+        },
+        error: (err) => {
+          console.error("❌ Error al enviar correos:", err);
+          alert("❌ Error al enviar correos");
+        }
+      });
+  }
+
+  checkBloqueActivo(docente_id: number | undefined): boolean {
+    if (!docente_id) return false;
+    
+    // Aquí hacemos la consulta de disponibilidad según tu lógica actual
+    // Ejemplo: revisar si el docente tiene algún bloque activo en su disponibilidad
+    let horasActivas = 0;
+
+    for (const dia of this.dias) {
+      const bloques = this.disponibilidadSeleccionada[dia] || {};
+      for (const bloque in bloques) {
+        if (bloques[bloque]) {
+          horasActivas++;
+        }
+      }
+    }
+
+    // Devuelve true si tiene al menos 1 bloque activo
+    return horasActivas > 0;
+  }
+
+
+  toggleBloque(curso: AsignacionCursoDocenteResponse) {
+  if (!curso.es_bloque || !curso.bloque) return; // solo bloques válidos
+
+  if (curso.activo) {
+    this.asignacionService.desactivarBloque(curso.id).subscribe({
+      next: () => {
+        curso.activo = false;
+        alert(`Se desactivó el bloque ${curso.bloque} en ${this.cursosMap[curso.curso_id]?.nombre}`);
+      },
+      error: err => console.error("ERROR desactivarBloque", err)
+    });
+  } else {
+    this.asignacionService.activarBloque(curso.id, curso.bloque as 'A' | 'B').subscribe({
+      next: res => {
+        curso.activo = res.activo;
+        // desactivar otros bloques del mismo curso y sección
+        this.cursosPorAsignacion[curso.asignacion_id].forEach(c => {
+          if (c.curso_id === curso.curso_id && c.seccion === curso.seccion && c.id !== curso.id) {
+            c.activo = false;
+          }
         });
-    }
+        alert(`Se activó el bloque ${curso.bloque} en ${this.cursosMap[curso.curso_id]?.nombre}`);
+      },
+      error: err => console.error("ERROR activarBloque", err)
+    });
+  }
+}
 
-    // seleccionar modalidad solo para mostrar disponibilidad
-    seleccionarModalidad(modalidad: Modalidad) {
-      this.modalidadSeleccionada = modalidad;
-      this.turnoSeleccionado = null;
-      this.bloques = [];
-      this.inicializarDisponibilidad();
 
-      if (this.docenteSeleccionadoId) {
-        this.disponibilidadService
-          .getDisponibilidadesDocente(this.docenteSeleccionadoId, modalidad)
-          .subscribe((disponibilidades: DisponibilidadDocenteResponse[]) => {
-            this.tieneDisponibilidad = disponibilidades.length > 0;
 
-            if (this.tieneDisponibilidad) {
-              disponibilidades.forEach((d: DisponibilidadDocenteResponse) => {
-                d.horarios.forEach((h: Horario) => {
-                  const bloque = `${h.hora_inicio}-${h.hora_fin}`;
-                  this.disponibilidadSeleccionada[d.dia] = this.disponibilidadSeleccionada[d.dia] || {};
-                  this.disponibilidadSeleccionada[d.dia][bloque] = true;
-                });
-              });
-            }
-          }, (error: any) => {
-            console.error('Error al obtener disponibilidades:', error);
-            this.tieneDisponibilidad = false;
-          });
-      }
-    }
-
-    // getTurnosDisponibles sin cambios
-    getTurnosDisponibles(dia?: string): Turno[] {
-      if (this.modalidadSeleccionada === 'PRESENCIAL') return ['Mañana', 'Tarde', 'Noche'];
-      if (this.modalidadSeleccionada === 'DISTANCIA') return ['Noche'];
-      if (this.modalidadSeleccionada === 'SEMIPRESENCIAL') {
-        if (dia === 'Sábado') return ['Mañana', 'Tarde', 'Noche'];
-        if (dia === 'Domingo') return ['Mañana'];
-        return ['Noche'];
-      }
-      return [];
-    }
-
-}    // --- funciones toggleBloque, guardarDisponibilidad, eliminarDisponibilidad y obtenerSeleccionados eliminadas ---
+}

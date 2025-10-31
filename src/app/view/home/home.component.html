@@ -1,150 +1,249 @@
-<div class="home-container" *ngIf="!cargando">
-  <div *ngIf="usuario; else noUser" class="row gx-3">
-    
-    <div class="col-md-4 d-flex flex-column gap-3">
-      <div class="card shadow-sm flex-shrink-0">
-        <div class="card-body text-center">
-          <img *ngIf="usuario.foto_url; else defaultFoto"
-               [src]="usuario.foto_url"
-               alt="Foto perfil"
-               class="rounded-circle mb-3"
-               width="120" height="120">
+
+<ng-template #cargandoTemplate>
+  <div class="loading">Cargando información...</div>
+</ng-template>
+
+<ng-template #noUser>
+  <p class="no-user">No hay información de usuario disponible.</p>
+</ng-template>
+
+<div *ngIf="!cargando; else cargandoTemplate" class="home-container">
+  <div *ngIf="usuario; else noUser" class="home-wrapper">
+    <!-- GRID PRINCIPAL -->
+    <div class="main-grid">
+      
+      <!-- IZQUIERDA: PERFIL + DETALLES PERFIL -->
+      <div class="left-panel">
+        <!-- PERFIL -->
+        <div class="card profile-card">
+          <h4 class="title-red">Perfil</h4>
+
+          <img
+            *ngIf="usuario.foto_url; else defaultFoto"
+            [src]="usuario.foto_url"
+            alt="Foto perfil"
+            class="profile-photo"
+          />
+
           <ng-template #defaultFoto>
-            <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center text-white mx-auto mb-3"
-                 style="width:120px; height:120px; font-size:40px;">
+            <div class="default-photo">
               {{ usuario.nombre.charAt(0).toUpperCase() }}
             </div>
           </ng-template>
 
-          <h4 class="mb-1">{{ usuario.nombre }}</h4>
-          <p class="text-muted mb-1">{{ rol?.nombre || 'Sin rol asignado' }}</p>
-          <small *ngIf="usuario.email_verificado" class="text-success d-block mb-2">
-            ✔ Email verificado
-          </small>
+          <h4 class="profile-name">{{ usuario.nombre }}</h4>
+          <p class="profile-role">{{ rol?.nombre || 'Sin rol asignado' }}</p>
+          <small *ngIf="usuario.email_verificado" class="verified">✔ Email verificado</small>
 
-          <div class="actions">
-            <button class="btn btn-sm btn-primary">Seguir</button>
-            <button class="btn btn-sm btn-outline-secondary">Mensaje</button>
+          <div class="profile-buttons">
+            <button class="btn-primary">Seguir</button>
+            <button class="btn-outline">Mensaje</button>
           </div>
         </div>
-      </div>
 
-      <div class="card shadow-sm flex-grow-1">
-        <div class="card-body p-0">
-          <h6 class="p-3">🔗 Enlaces</h6>
-          <ul class="list-group list-group-flush enlaces-list">
-            <li class="list-group-item"><i class="bi bi-globe me-2"></i> Website</li>
-            <li class="list-group-item"><i class="bi bi-github me-2"></i> Github</li>
-            <li class="list-group-item"><i class="bi bi-twitter me-2"></i> Twitter</li>
-            <li class="list-group-item"><i class="bi bi-instagram me-2"></i> Instagram</li>
-            <li class="list-group-item"><i class="bi bi-facebook me-2"></i> Facebook</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+        <!-- DETALLES DEL PERFIL -->
+        <div class="card details-card">
+          <h5 class="title-red">Detalles del Perfil</h5>
 
-    <div class="col-md-8 d-flex flex-column gap-3">
-      <div class="card shadow-sm flex-shrink-0">
-        <div class="card-body">
-          <h5>Detalles del perfil</h5>
-
-          <form (ngSubmit)="enviarDatos()">
-            <div class="mb-2">
+          <form (ngSubmit)="enviarDatos()" class="details-form">
+            <div>
               <label>Nombre completo</label>
-              <input class="form-control" [(ngModel)]="usuario!.nombre" name="nombre">
-            </div>
-            <div class="mb-2">
-              <label>Correo</label>
-              <input class="form-control" [(ngModel)]="usuario!.correo" name="correo">
-            </div>
-            <div class="mb-2">
-              <label>Teléfono</label>
-              <input class="form-control" [(ngModel)]="telefono" name="telefono">
-            </div>
-            <div class="mb-2">
-              <label>Dirección</label>
-              <input class="form-control" [(ngModel)]="calleNombre" name="direccion" placeholder="Ej: Av. Principal 123">
+              <input [(ngModel)]="usuario!.nombre" name="nombre" required />
             </div>
 
-            <div class="text-end mt-2">
-              <button type="submit" class="btn btn-success btn-sm">💾 Guardar cambios</button>
+            <div>
+              <label>Correo institucional</label>
+              <input [(ngModel)]="usuario!.correo" name="correo" readonly />
+              <small>El correo no puede modificarse</small>
+            </div>
+
+            <div class="form-row">
+              <div>
+                <label>Tipo</label>
+                <select [(ngModel)]="calleTipo" name="calleTipo">
+                  <option>Av.</option>
+                  <option>Jr.</option>
+                  <option>Psj.</option>
+                  <option>Mz.</option>
+                </select>
+              </div>
+              <div>
+                <label>Nombre calle</label>
+                <input [(ngModel)]="calleNombre" name="calleNombre" />
+              </div>
+              <div>
+                <label>Número</label>
+                <input [(ngModel)]="calleNumero" name="calleNumero" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div>
+                <label>Ciudad</label>
+                <input [(ngModel)]="ciudad" name="ciudad" />
+              </div>
+              <div>
+                <label>Departamento</label>
+                <input [(ngModel)]="departamento" name="departamento" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">💾 Guardar cambios</button>
             </div>
           </form>
         </div>
       </div>
 
-      <div *ngIf="rol?.nombre?.toLowerCase() === 'docente'" class="card shadow-sm flex-shrink-0">
-        <div class="card-body">
-          <h5>🎓 Código Docente</h5>
-          <p *ngIf="usuario?.cod_docente; else sinCodigo" class="text-success">
-            Código actual: <strong>{{ usuario.cod_docente }}</strong>
-          </p>
-          <ng-template #sinCodigo>
-            <p class="text-muted">Aún no has registrado tu código docente.</p>
-          </ng-template>
-          <div class="input-group mt-2">
-            <input type="text"
-                   [(ngModel)]="nuevoCodDocente"
-                   name="codDocente"
-                   class="form-control"
-                   placeholder="Ingrese nuevo código docente">
-            <button class="btn btn-primary" type="button" (click)="actualizarCodigoDocente()">
-              Actualizar
+      <!-- DERECHA: ASIGNACIONES DOCENTE / ADMINISTRADOR -->
+      <div class="right-panel">
+        <!-- 📚 ASIGNACIONES DOCENTE -->
+        <div *ngIf="rol?.nombre?.toLowerCase() === 'docente'" class="card teacher-card shadow-md">
+          <h5 class="title-red text-center mb-4">📚 Asignaciones Docente</h5>
+
+          <!-- SECCIÓN DE CURSOS -->
+          <div class="teacher-courses">
+
+            <!-- PRESENCIAL -->
+            <div *ngIf="cursosPresenciales.length > 0" class="course-section presencial">
+              <div class="section-header">
+                <h6>Modalidad: PRESENCIAL</h6>
+              </div>
+              <ul class="list-group">
+                <li *ngFor="let curso of cursosPresenciales" class="list-group-item">
+                  <div class="course-info">
+                    <strong>{{ curso.carrera_nombre }}</strong>
+                    <span>{{ curso.curso_nombre }} - {{ curso.plan }} | Ciclo {{ curso.ciclo }}</span>
+                    <small class="text-muted">
+                      Tipo: {{ curso.es_bloque ? ('Bloque ' + curso.bloque) : 'Regular' }}
+                    </small>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- SEMIPRESENCIAL -->
+            <div *ngIf="cursosSemiPresenciales.length > 0" class="course-section semipresencial">
+              <div class="section-header">
+                <h6>Modalidad: SEMIPRESENCIAL</h6>
+              </div>
+              <ul class="list-group">
+                <li *ngFor="let curso of cursosSemiPresenciales" class="list-group-item">
+                  <div class="course-info">
+                    <strong>{{ curso.carrera_nombre }}</strong>
+                    <span>{{ curso.curso_nombre }} - {{ curso.plan }} | Ciclo {{ curso.ciclo }}</span>
+                    <small class="text-muted">
+                      Tipo: {{ curso.es_bloque ? ('Bloque ' + curso.bloque) : 'Regular' }}
+                    </small>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- DISTANCIA -->
+            <div *ngIf="cursosDistancia.length > 0" class="course-section distancia">
+              <div class="section-header">
+                <h6>Modalidad: DISTANCIA</h6>
+              </div>
+              <ul class="list-group">
+                <li *ngFor="let curso of cursosDistancia" class="list-group-item">
+                  <div class="course-info">
+                    <strong>{{ curso.carrera_nombre }}</strong>
+                    <span>{{ curso.curso_nombre }} - {{ curso.plan }} | Ciclo {{ curso.ciclo }}</span>
+                    <small class="text-muted">
+                      Tipo: {{ curso.es_bloque ? ('Bloque ' + curso.bloque) : 'Regular' }}
+                    </small>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- SIN CURSOS -->
+            <div *ngIf="!tieneCursosActivos" class="text-muted text-center py-3">
+              No tienes asignaciones activas.
+            </div>
+          </div>
+
+          <!-- BOTÓN DISPONIBILIDAD -->
+          <div class="availability-btn">
+            <button (click)="abrirModalDisponibilidad()" class="btn-primary">
+              🕒 Ver / Editar Disponibilidad
             </button>
           </div>
-          <p *ngIf="mensajeCodigo" class="mt-2 text-info">{{ mensajeCodigo }}</p>
-        </div>
-      </div>
-
-      <div class="row flex-grow-1">
-        <div *ngIf="rol?.nombre?.toLowerCase() === 'docente'" class="col-md-6 d-flex flex-column">
-          <div class="card shadow-sm flex-grow-1">
-            <div class="card-body cursos-list">
-              <h6>📚 Cursos asignados</h6>
-              <ul class="list-group list-group-flush">
-                <li *ngFor="let curso of cursosAsignados" class="list-group-item">
-                  {{ curso.plan }} - Ciclo: {{ curso.ciclo }} 
-                  <br><small class="text-muted">Secciones: {{ curso.cantidad_secciones }}</small>
-                </li>
-                <li *ngIf="cursosAsignados.length === 0" class="list-group-item text-muted">
-                  No tienes cursos asignados.
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
 
-        <div *ngIf="rol?.nombre?.toLowerCase() === 'administrador' || rol?.nombre?.toLowerCase() === 'coordinador'" 
-             class="col-md-6 d-flex flex-column">
-          <div class="card shadow-sm flex-grow-1">
-            <div class="card-body asignaciones-list">
-              <h6>🗂 Asignaciones</h6>
-              <ul class="list-group list-group-flush">
-                <li *ngFor="let asignacion of asignaciones" class="list-group-item">
-                  {{ asignacion.plan }} - {{ asignacion.ciclo }} 
-                  <br><small [class.text-success]="asignacion.estado" [class.text-danger]="!asignacion.estado">
-                    {{ asignacion.estado ? 'Activo' : 'Inactivo' }}
-                  </small>
-                </li>
-                <li *ngIf="asignaciones.length === 0" class="list-group-item text-muted">
-                  No hay asignaciones disponibles.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="rol?.nombre?.toLowerCase() === 'administrador'" class="card shadow-sm flex-shrink-0">
-        <div class="card-body text-center">
-          <button class="btn btn-primary me-2" (click)="toggleModalGestionRoles()">Gestionar roles</button>
-          <button class="btn btn-success" (click)="toggleModalActualizarRoles()">Actualizar roles de usuarios</button>
+        <!-- ADMINISTRADOR / COORDINADOR -->
+        <div
+          *ngIf="rol?.nombre?.toLowerCase() === 'administrador' || rol?.nombre?.toLowerCase() === 'coordinador'"
+          class="card admin-card"
+        >
+          <h6 class="title-red">Administrador</h6>
+          <ul>
+            <li *ngFor="let asignacion of asignaciones">
+              {{ asignacion.plan }} - {{ asignacion.ciclo }}<br />
+              <small [style.color]="asignacion.estado ? '#2ECC71' : '#E50914'">
+                {{ asignacion.estado ? 'Activo' : 'Inactivo' }}
+              </small>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
-  </div>
 
-  <ng-template #noUser>
-    <p class="text-muted">No hay información de usuario disponible.</p>
-  </ng-template>
+    <!-- MODAL DISPONIBILIDAD DOCENTE -->
+    <div *ngIf="modalDisponibilidadVisible" class="modal-overlay">
+      <div class="modal-content">
+        <header class="modal-header">
+          <h4>🕒 Disponibilidad Docente</h4>
+          <button (click)="cerrarModalDisponibilidad()" class="close-btn" aria-label="Cerrar modal">✖</button>
+        </header>
+
+        <section class="modal-selects">
+          <div>
+            <label for="modalidad">Modalidad</label>
+            <select id="modalidad" [(ngModel)]="modalidadSeleccionada" (change)="abrirModalDisponibilidad()">
+              <option *ngFor="let m of modalidades" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+
+          <div *ngIf="modalidadSeleccionada === 'PRESENCIAL' || modalidadSeleccionada === 'SEMIPRESENCIAL'">
+            <label for="turno">Turno</label>
+            <select id="turno" [(ngModel)]="turnoSeleccionado" (change)="abrirModalDisponibilidad()">
+              <option *ngFor="let t of turnosFiltrados" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="modal-body">
+          <div class="table-wrapper">
+            <table class="modal-table">
+              <thead>
+                <tr>
+                  <th>Hora / Día</th>
+                  <th *ngFor="let dia of dias">{{ dia }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let bloque of bloquesPorTurnoActual">
+                  <td class="bloque-hora">{{ bloque }}</td>
+                  <td *ngFor="let dia of dias">
+                    <input
+                      type="checkbox"
+                      [checked]="checkHorario(dia, bloque)"
+                      (change)="toggleBloque(dia, bloque, $event.target.checked)"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="modal-footer">
+          <button (click)="guardarDisponibilidadCompleta()" class="btn-primary">💾 Guardar</button>
+          <button (click)="cerrarModalDisponibilidad()" class="btn-secondary">Cerrar</button>
+        </footer>
+      </div>
+    </div>
+  </div>
 </div>

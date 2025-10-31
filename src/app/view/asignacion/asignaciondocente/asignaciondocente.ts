@@ -4,12 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { AsignacionService } from '../../../core/services/asignacion.service';
 import { DocenteService } from '../../../core/services/docente.service';
 import { CursoService } from '../../../core/services/curso.service';
+import { CarreraService } from '../../../core/services/carrera.service';
 import { AsignacionResponse } from '../../../core/models/asignacion.model';
 import { Docente } from '../../../core/models/docente.model';
 import { CursoModel } from '../../../core/models/Curso.model';
-import { CarreraService } from '../../../core/services/carrera.service';
-import { CarreraModel } from '../../../core/models/carrera.model'; 
-
 
 interface CursoAsignacion {
   id: number;
@@ -32,7 +30,7 @@ interface CursoAsignacion {
   selector: 'app-asignacion-docente',
   standalone: true,
   templateUrl: './asignaciondocente.html',
-  styleUrls: ['./asignaciondocente.scss'],
+  styleUrls: ['./asignaciondocente.css'],
   imports: [CommonModule, FormsModule]
 })
 export class Asignaciondocente implements OnInit {
@@ -42,7 +40,6 @@ export class Asignaciondocente implements OnInit {
   seleccion: { [clave: string]: number | null } = {};
   alerta: { tipo: 'success' | 'danger' | 'info' | null; mensaje: string } = { tipo: null, mensaje: '' };
   carrerasMap: { [id: number]: string } = {};
-
 
   constructor(
     private asignacionService: AsignacionService,
@@ -57,11 +54,13 @@ export class Asignaciondocente implements OnInit {
     this.cargarCarreras();
   }
 
+  // ────────────── ALERTAS ──────────────
   mostrarAlerta(tipo: 'success' | 'danger' | 'info', mensaje: string) {
     this.alerta = { tipo, mensaje };
     setTimeout(() => (this.alerta = { tipo: null, mensaje: '' }), 3000);
   }
 
+  // ────────────── CARGA DE DATOS ──────────────
   cargarAsignaciones(carreraId?: number) {
     this.asignacionService.getAll().subscribe(res => {
       this.asignaciones = res.filter(a => a.estado && (!carreraId || a.carreraid === carreraId));
@@ -91,13 +90,12 @@ export class Asignaciondocente implements OnInit {
           return acc;
         }, {} as { [id: number]: CursoModel });
 
-        const cursosAsignados: CursoAsignacion[] = [];
-
-        relaciones.forEach(r => {
+        const cursosAsignados: CursoAsignacion[] = relaciones.map(r => {
           const docenteAsignado = this.docentes.find(d => d.id === r.docente_id);
           const clave = `${r.curso_id}_${r.seccion}`;
+          if (!this.seleccion[clave] && docenteAsignado) this.seleccion[clave] = docenteAsignado.id;
 
-          cursosAsignados.push({
+          return {
             id: r.id,
             asignacion_id: r.asignacion_id,
             curso_id: r.curso_id,
@@ -112,11 +110,7 @@ export class Asignaciondocente implements OnInit {
             comentario: r.comentario,
             disponibilidad: r.disponibilidad,
             activo: (r as any).activo
-          });
-
-          if (!this.seleccion[clave] && docenteAsignado) {
-            this.seleccion[clave] = docenteAsignado.id;
-          }
+          };
         });
 
         this.cursosPorAsignacion[asig.id] = cursosAsignados;
@@ -129,52 +123,76 @@ export class Asignaciondocente implements OnInit {
     curso.docenteIdTemp = docenteId;
   }
 
-  guardarDocente(curso: CursoAsignacion) {
+  confirmarGuardado(curso: CursoAsignacion) {
     const clave = `${curso.curso_id}_${curso.seccion}`;
     const docenteId = this.seleccion[clave];
-    if (!docenteId) return;
 
-    this.asignacionService.actualizarDocenteCurso(curso.asignacion_id, {
-      curso_id: curso.curso_id,
-      seccion: curso.seccion,
-      docente_id: docenteId
-    }).subscribe(() => {
-      const docenteNuevo = this.docentes.find(d => d.id === docenteId);
-      if (docenteNuevo) {
-        curso.docente = docenteNuevo;
+    // 1️⃣ Validar bloque
+    if (curso.es_bloque === undefined) {
+      this.mostrarAlerta('info', 'Selecciona si el curso es BLOQUE o NO antes de continuar');
+      return;
+    }
+
+    if (curso.es_bloque && !curso.bloque) {
+      this.mostrarAlerta('danger', 'Debes seleccionar un bloque (A o B)');
+      return;
+  }
+
+  // 2️⃣ Validar docente (solo después del bloque)
+  if (!docenteId) {
+    this.mostrarAlerta('info', 'Selecciona un docente para guardar');
+    return;
+  }
+
+  this.guardarRelacionYDocente(curso);
+}
+
+
+  guardarRelacionYDocente(curso: CursoAsignacion) {
+  const clave = `${curso.curso_id}_${curso.seccion}`;
+  const docenteId = this.seleccion[clave];
+
+  const payloadRelacion = {
+    es_bloque: curso.es_bloque || false,
+    bloque: curso.bloque || null,
+    duplica_horas: curso.duplica_horas || false,
+    comentario: curso.comentario || null
+  };
+
+
+  this.asignacionService.actualizarRelacion(curso.id, payloadRelacion).subscribe({
+    next: () => {
+
+      if (!docenteId) {
+        console.log("⏸ Docente aún no seleccionado. Deteniendo aquí.");
+        this.mostrarAlerta('info', 'Ahora selecciona un docente');
+        return;
       }
-      this.mostrarAlerta('success', `Docente actualizado para ${curso.nombreCurso} - sección ${curso.seccion}`);
-    });
-  }
 
-  guardarRelacion(curso: CursoAsignacion) {
-    this.asignacionService.actualizarRelacion(curso.id, {
-      bloque: curso.bloque,
-      es_bloque: curso.es_bloque,
-      duplica_horas: curso.duplica_horas
-    }).subscribe({
-      next: () => {
-        this.mostrarAlerta('info', `Relación actualizada para ${curso.nombreCurso} (Sección ${curso.seccion})`);
-      },
-      error: err => console.error("ERROR guardarRelacion", err)
-    });
-  }
+      this.asignacionService.actualizarDocenteCurso(curso.asignacion_id, {
+        curso_id: curso.curso_id,
+        seccion: curso.seccion,
+        docente_id: docenteId
+      }).subscribe({
+        next: () => {
+          const docenteNuevo = this.docentes.find(d => d.id === docenteId);
+          if (docenteNuevo) curso.docente = docenteNuevo;
 
-  activarBloque(curso: CursoAsignacion) {
-    this.asignacionService.activarBloque(curso.id, curso.bloque as 'A' | 'B')
-      .subscribe({
-        next: (res: any) => {
-          curso.activo = res.activo; // 👈 ya no da error
-          this.cursosPorAsignacion[curso.asignacion_id].forEach(c => {
-            if (c.curso_id === curso.curso_id && c.seccion === curso.seccion && c.id !== curso.id) {
-              c.activo = false;
-            }
-          });
-          this.mostrarAlerta('success', `Se activó bloque ${curso.bloque} en ${curso.nombreCurso}`);
+          if (curso.es_bloque && curso.duplica_horas && curso.activo) {
+            console.log("📌 Duplicar horas activo -> Recalculando...");
+            this.recalcularHoras(docenteNuevo!);
+          }
+
+          this.mostrarAlerta('success', `Guardado completo en ${curso.nombreCurso}`);
         },
-        error: err => console.error("ERROR activarBloque", err)
+        error: err => console.error("❌ ERROR guardar docente", err)
       });
-  }
+
+    },
+    error: err => console.error("❌ ERROR guardar relación", err)
+  });
+}
+
 
   recalcularHoras(docente: Docente) {
     this.asignacionService.recalcularHorasDocente(docente.id!).subscribe(res => {
@@ -184,61 +202,117 @@ export class Asignaciondocente implements OnInit {
     });
   }
 
+  toggleBloque(curso: CursoAsignacion) {
+    if (curso.activo) {
+      this.asignacionService.desactivarBloque(curso.id).subscribe({
+        next: () => {
+          curso.activo = false;
+          this.mostrarAlerta('danger', `Se desactivó el bloque ${curso.bloque} en ${curso.nombreCurso}`);
+        },
+        error: err => console.error("ERROR desactivarBloque", err)
+      });
+    } else {
+      this.asignacionService.activarBloque(curso.id, curso.bloque as 'A' | 'B').subscribe({
+        next: res => {
+          curso.activo = res.activo;
+          this.cursosPorAsignacion[curso.asignacion_id].forEach(c => {
+            if (c.curso_id === curso.curso_id && c.seccion === curso.seccion && c.id !== curso.id) {
+              c.activo = false;
+            }
+          });
+          this.mostrarAlerta('success', `Se activó bloque ${curso.bloque} en ${curso.nombreCurso}`);
+        },
+        error: err => console.error("ERROR activarBloque", err)
+      });
+    }
+  }
+
+  // ────────────── UTILES ──────────────
   tieneCursos(asignacionId: number): boolean {
     return (this.cursosPorAsignacion[asignacionId]?.length || 0) > 0;
   }
 
   agregarSeccion(asig: AsignacionResponse) {
-    const nuevaCantidad = (asig.cantidad_secciones || 0) + 1;
+  const nuevaCantidad = (asig.cantidad_secciones || 0) + 1;
 
-    this.asignacionService.updateSecciones(asig.id, { cantidad_secciones: nuevaCantidad })
-      .subscribe(updated => {
-        asig.cantidad_secciones = updated.cantidad_secciones;
-        const cursoIdsUnicos = Array.from(
-          new Set((this.cursosPorAsignacion[asig.id] || []).map(c => c.curso_id))
-        );
+  console.log("➕ Intentando AGREGAR sección:", {
+    asignacion_id: asig.id,
+    cantidad_actual: asig.cantidad_secciones,
+    nuevaCantidad
+  });
 
-        this.asignacionService.actualizarCursos(asig.id, {
-          curso_ids: cursoIdsUnicos
-        }).subscribe(() => {
+  this.asignacionService.updateSecciones(asig.id, { cantidad_secciones: nuevaCantidad }).subscribe({
+    next: updated => {
+      console.log("✅ Sección AGREGADA en BD:", updated);
+
+      asig.cantidad_secciones = updated.cantidad_secciones;
+      const cursoIdsUnicos = Array.from(new Set((this.cursosPorAsignacion[asig.id] || []).map(c => c.curso_id)));
+
+      this.asignacionService.actualizarCursos(asig.id, { curso_ids: cursoIdsUnicos }).subscribe({
+        next: () => {
           this.cargarCursos(asig);
           this.mostrarAlerta('success', `Se agregó la sección ${nuevaCantidad}`);
-        });
+        },
+        error: err => console.error("❌ ERROR al actualizar cursos después de agregar sección:", err)
       });
-  }
+    },
+    error: err => console.error("❌ ERROR al AGREGAR sección:", err)
+  });
+}
 
   quitarSeccion(asig: AsignacionResponse) {
-    if (asig.cantidad_secciones <= 1) {
-      this.mostrarAlerta('danger', 'No puedes tener menos de 1 sección');
-      return;
-    }
-
-    const ultimaSeccion = asig.cantidad_secciones;
-
-    this.asignacionService.updateSecciones(asig.id, { cantidad_secciones: ultimaSeccion - 1 })
-      .subscribe(updated => {
-        asig.cantidad_secciones = updated.cantidad_secciones;
-        this.asignacionService.deleteSeccion(asig.id, ultimaSeccion).subscribe(() => {
-          this.cargarCursos(asig);
-          this.mostrarAlerta('danger', `Se eliminó la sección ${ultimaSeccion}`);
-        });
-      });
+  if (asig.cantidad_secciones <= 1) {
+    this.mostrarAlerta('danger', 'No puedes tener menos de 1 sección');
+    console.warn("⛔ Intento de eliminar sección 1. Prohibido.");
+    return;
   }
+
+  const ultimaSeccion = asig.cantidad_secciones;
+
+  console.log("🗑️ Intentando ELIMINAR sección:", {
+    asignacion_id: asig.id,
+    cantidad_actual: asig.cantidad_secciones,
+    seccion_a_eliminar: ultimaSeccion
+  });
+
+  this.asignacionService.updateSecciones(asig.id, { cantidad_secciones: ultimaSeccion - 1 }).subscribe({
+    next: updated => {
+      console.log("✅ Sección RESTADA en BD:", updated);
+
+      asig.cantidad_secciones = updated.cantidad_secciones;
+
+      this.asignacionService.deleteSeccion(asig.id, ultimaSeccion).subscribe({
+        next: () => {
+
+          // ✅ Eliminar visualmente la sección en memoria
+          this.cursosPorAsignacion[asig.id] = 
+            (this.cursosPorAsignacion[asig.id] || [])
+              .filter(c => c.seccion !== ultimaSeccion);
+
+          console.log("✅ Filtrada sección en Frontend");
+
+          // ✅ Recargar información real del backend
+          this.cargarCursos(asig);
+
+          this.mostrarAlerta('danger', `Se eliminó la sección ${ultimaSeccion}`);
+        },
+        error: err => console.error("❌ ERROR AL ELIMINAR sección desde la BD:", err)
+      });
+    },
+    error: err => console.error("❌ ERROR al actualizar cantidad_secciones antes de eliminar:", err)
+  });
+}
+
 
   desactivarAsignacion(asig: AsignacionResponse) {
     this.asignacionService.updateEstado(asig.id, { estado: false }).subscribe(updated => {
       asig.estado = false;
-
       (this.cursosPorAsignacion[asig.id] || []).forEach(curso => {
         if (curso.activo) {
-          curso.activo = false; 
-          this.asignacionService.desactivarBloque(curso.id).subscribe({
-            next: () => {},
-            error: err => console.error("ERROR desactivarBloque", err)
-          });
+          curso.activo = false;
+          this.asignacionService.desactivarBloque(curso.id).subscribe();
         }
       });
-
       this.mostrarAlerta('danger', 'Asignación desactivada y bloques inactivos');
     });
   }
@@ -249,32 +323,4 @@ export class Asignaciondocente implements OnInit {
       this.mostrarAlerta('success', 'Asignación activada. Los bloques permanecen inactivos');
     });
   }
-
-
-
-  toggleBloque(curso: CursoAsignacion) {
-    if (curso.activo) {
-      this.asignacionService.desactivarBloque(curso.id).subscribe({
-        next: () => {
-          curso.activo = false;
-          this.mostrarAlerta('danger', `Se desactivó el bloque ${curso.bloque} en ${curso.nombreCurso}`);
-        },
-        error: (err: any) => console.error("ERROR desactivarBloque", err)
-      });
-    } else {
-      this.asignacionService.activarBloque(curso.id, curso.bloque as 'A' | 'B').subscribe({
-        next: (res: any) => {
-          curso.activo = res.activo;
-          this.cursosPorAsignacion[curso.asignacion_id].forEach(c => {
-            if (c.curso_id === curso.curso_id && c.seccion === curso.seccion && c.id !== curso.id) {
-              c.activo = false;
-            }
-          });
-          this.mostrarAlerta('success', `Se activó bloque ${curso.bloque} en ${curso.nombreCurso}`);
-        },
-        error: (err: any) => console.error("ERROR activarBloque", err)
-      });
-    }
-  }
-
 }

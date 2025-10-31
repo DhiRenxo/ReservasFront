@@ -11,6 +11,7 @@ declare var bootstrap: any;
   standalone: true,
   imports: [CommonModule, RouterModule, DocenteForm],
   templateUrl: './docentelist.html',
+  styleUrl: './docentelist.css'
 })
 export class DocenteList {
   private docenteService = inject(DocenteService);

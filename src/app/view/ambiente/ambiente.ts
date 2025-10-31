@@ -58,17 +58,25 @@ export class Ambiente implements OnInit {
   }
 
   guardarAmbiente() {
-    this.ambienteService.crear(this.nuevoAmbiente).subscribe({
-      next: () => {
-        this.cargarAmbientes();
-        this.cancelar();
-      },
-      error: (err) => {
-        alert('Error al guardar ambiente');
-        console.error(err);
-      }
-    });
+  console.log("Payload enviado:", this.nuevoAmbiente);
+
+  if(!this.nuevoAmbiente.codigo || this.nuevoAmbiente.tipoid <= 0){
+    alert("Debes completar el código y tipo de ambiente");
+    return;
   }
+
+  this.ambienteService.crear(this.nuevoAmbiente).subscribe({
+    next: () => {
+      this.cargarAmbientes();
+      this.cancelar();
+    },
+    error: (err) => {
+      alert('Error al guardar ambiente');
+      console.error(err);
+    }
+  });
+}
+
 
   cambiarEstado(ambiente: AmbienteModel) {
     this.ambienteService.cambiarEstado(ambiente.id, !ambiente.activo).subscribe({

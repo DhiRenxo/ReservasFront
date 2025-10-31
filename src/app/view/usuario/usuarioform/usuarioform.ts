@@ -11,7 +11,7 @@ import { Rol } from '../../../core/models/rol.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './usuarioform.html',
-  styleUrls: ['./usuarioform.scss'],
+  styleUrls: ['./usuarioform.css'],
 })
 export class Usuarioform implements OnInit {
   @Input() idUsuario: number | null = null;

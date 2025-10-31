@@ -8,7 +8,7 @@ import { RouterOutlet } from '@angular/router';
   standalone: true, 
   imports: [CommonModule, Sidebar, RouterOutlet],
   templateUrl: './layout.html',
-  styleUrls: ['./layout.scss'] 
+  styleUrls: ['./layout.css'] 
 })
 export class Layout {
   isSidebarCollapsed = false;
