@@ -1,41 +1,44 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CursoService } from '../../../core/services/curso.service';
 import { CarreraService } from '../../../core/services/carrera.service';
 import { CursoModel } from '../../../core/models/Curso.model';
 import { CarreraModel } from '../../../core/models/carrera.model';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { FormsModule } from '@angular/forms';
-declare var bootstrap: any;
-
 
 @Component({
   selector: 'app-curso',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './curso.html',
-  styleUrls: ['./curso.scss']
+  styleUrls: ['./curso.css']
 })
 export class Curso implements OnInit {
-  cursos: CursoModel[] = [];
-  carreras: CarreraModel[] = [];
 
-  filteredCursos: CursoModel[] = [];
-  
+  // Datos como Signals
+  cursos = signal<CursoModel[]>([]);
+  carreras = signal<CarreraModel[]>([]);
 
+  // Formularios
   formCurso!: FormGroup;
   formEditarCurso!: FormGroup;
   cursoSeleccionado!: CursoModel | null;
+
+  // Modal
+  modalCrearVisible = signal(false);
+  modalEditarVisible = signal(false);
+
+  // Filtros como formulario reactivo
+  filtrosForm!: FormGroup;
+
   planesEstudio = ['2019', '2023'];
   ciclos = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
 
-  // Filtros
-  filtroCarrera: string = '';
-  filtroEstado: string = '';
-  filtroNombre: string = '';
-  filtroCodigo: string = '';
-  filtroCiclo: string = '';
-  filtroPlan: string = '';
+  // Cursos filtrados como computed
+  filteredCursos = computed(() => {
+    const filtros = this.filtrosForm.value;
+    return this.cursos().filter(c => this.filtrarCurso(c, filtros));
+  });
 
   constructor(
     private cursoService: CursoService,
@@ -44,23 +47,21 @@ export class Curso implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Formularios
     this.formCurso = this.fb.group({
       carreid: [null, Validators.required],
-      modalidad: [''],
+      modalidad: ['PRESENCIAL'],
       ciclo: ['', Validators.required],
       plan: ['', Validators.required],
       codigo: ['', Validators.required],
       nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-Z\s]+$/)]],
       horas: ['', [Validators.required, Validators.pattern(/^\d+$/)]]
     });
-
-    this.obtenerCursos();
-    this.obtenerCarreras();
 
     this.formEditarCurso = this.fb.group({
       id: [null],
       carreid: [null, Validators.required],
-      modalidad: [''],
+      modalidad: ['PRESENCIAL'],
       ciclo: ['', Validators.required],
       plan: ['', Validators.required],
       codigo: ['', Validators.required],
@@ -68,84 +69,97 @@ export class Curso implements OnInit {
       horas: ['', [Validators.required, Validators.pattern(/^\d+$/)]]
     });
 
-  }
+    // Filtros
+    this.filtrosForm = this.fb.group({
+      carrera: [''],
+      nombre: [''],
+      codigo: [''],
+      estado: [''],
+      ciclo: [''],
+      plan: ['']
+    });
 
-  obtenerCursos(): void {
-    this.cursoService.getAll().subscribe(data => {
-      this.cursos = data;
-      this.aplicarFiltros();
+    // Cargar datos iniciales
+    this.obtenerCarreras();
+    this.obtenerCursos();
+
+    // Reactividad en filtros
+    this.filtrosForm.valueChanges.subscribe(() => {
+      // filteredCursos se recalcula automáticamente
     });
   }
 
-  obtenerCarreras(): void {
-    this.carreraService.listar().subscribe(data => {
-      this.carreras = data;
-    });
+  // Métodos
+  obtenerCursos() {
+    this.cursoService.getAll().subscribe(data => this.cursos.set(data));
   }
 
-  crearCurso(): void {
+  obtenerCarreras() {
+    this.carreraService.listar().subscribe(data => this.carreras.set(data));
+  }
+
+  crearCurso() {
     if (this.formCurso.invalid) return;
 
-    const curso = {
+    const curso: CursoModel = {
       ...this.formCurso.value,
-      carreid: Number(this.formCurso.value.carreid),
+      carreid: Number(this.formCurso.value.carreid)
     };
 
-    console.log('Datos enviados al backend:', curso);
+    console.log('Datos a crear:', curso);
 
     this.cursoService.create(curso).subscribe(() => {
-      this.formCurso.reset();
+      console.log('Curso creado correctamente');
+      this.formCurso.reset({ modalidad: 'PRESENCIAL' });
+      this.modalCrearVisible.set(false);
+
+      // Actualizar signal para que filteredCursos se recalculen
       this.obtenerCursos();
     });
   }
 
+  abrirModalCrear() { this.modalCrearVisible.set(true); }
+  cerrarModalCrear() { this.modalCrearVisible.set(false); }
 
-  actualizar(curso: CursoModel): void {
-    const updated = { ...curso };
-    this.cursoService.update(curso.id!, updated).subscribe(() => {
-      this.obtenerCursos();
-    });
-  }
-
-  cambiarEstado(curso: CursoModel): void {
-    this.cursoService.toggleEstado(curso.id!).subscribe(() => {
-      this.obtenerCursos();
-    });
-  }
-
-  aplicarFiltros(): void {
-    this.filteredCursos = this.cursos.filter(curso => {
-      const carreraNombre = this.obtenerNombreCarrera(curso.carreid).toLowerCase();
-      return (
-        (!this.filtroCarrera || carreraNombre.includes(this.filtroCarrera.toLowerCase())) &&
-        (!this.filtroEstado || (this.filtroEstado === 'activo' ? curso.estado : !curso.estado)) &&
-        (!this.filtroNombre || curso.nombre.toLowerCase().includes(this.filtroNombre.toLowerCase())) &&
-        (!this.filtroCodigo || curso.codigo.toLowerCase().includes(this.filtroCodigo.toLowerCase())) &&
-        (!this.filtroCiclo || curso.ciclo === this.filtroCiclo) &&
-        (!this.filtroPlan || curso.plan === this.filtroPlan)
-      );
-    });
-  }
-
-  obtenerNombreCarrera(carreid: number): string {
-    const carrera = this.carreras.find(c => c.id === carreid);
-    return carrera ? carrera.nombre : 'Desconocido';
-  }
-
-  abrirModalEditar(curso: CursoModel): void {
+  abrirModalEditar(curso: CursoModel) {
     this.cursoSeleccionado = curso;
     this.formEditarCurso.patchValue(curso);
-    const modal = new bootstrap.Modal(document.getElementById('editarCursoModal')!);
-    modal.show();
+    this.modalEditarVisible.set(true);
   }
-  actualizarCurso(): void {
+  cerrarModalEditar() { this.modalEditarVisible.set(false); }
+
+  actualizarCurso() {
     if (this.formEditarCurso.invalid) return;
 
     const cursoActualizado = this.formEditarCurso.value;
+
     this.cursoService.update(cursoActualizado.id, cursoActualizado).subscribe(() => {
+      this.modalEditarVisible.set(false);
       this.obtenerCursos();
     });
   }
 
+  cambiarEstado(curso: CursoModel) {
+    this.cursoService.toggleEstado(curso.id!).subscribe(() => this.obtenerCursos());
+  }
+
+  obtenerNombreCarrera(carreid: number) {
+    const carrera = this.carreras().find(c => c.id === carreid);
+    return carrera ? carrera.nombre : 'Desconocido';
+  }
+
+  private filtrarCurso(c: CursoModel, filtros: any): boolean {
+    const nombreCarrera = this.obtenerNombreCarrera(c.carreid).toLowerCase();
+    const estado = c.estado ?? false;
+
+    return (
+      (!filtros.carrera || nombreCarrera.includes(filtros.carrera.toLowerCase())) &&
+      (!filtros.estado || (filtros.estado === 'activo' ? estado : !estado)) &&
+      (!filtros.nombre || c.nombre.toLowerCase().includes(filtros.nombre.toLowerCase())) &&
+      (!filtros.codigo || c.codigo.toLowerCase().includes(filtros.codigo.toLowerCase())) &&
+      (!filtros.ciclo || c.ciclo === filtros.ciclo) &&
+      (!filtros.plan || c.plan === filtros.plan)
+    );
+  }
 
 }

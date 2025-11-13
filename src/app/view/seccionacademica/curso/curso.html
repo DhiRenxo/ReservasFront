@@ -1,198 +1,152 @@
+<div class="min-h-screen p-4 text-gray-900 md:p-6 bg-gradient-to-b from-white to-red-50">
 
-<div class="main-container">
-<!-- Botón para abrir el modal -->
-<div class="d-flex justify-content-between align-items-center mb-3 text-dark">
-  <h2>Gestión de Cursos</h2>
-  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#crearCursoModal">
-    Crear Curso
-  </button>
-</div>
+  <!-- Header -->
+  <div class="flex flex-col items-start justify-between gap-4 mb-6 sm:flex-row sm:items-center">
+    <h2 class="text-2xl font-semibold text-red-800">Gestión de Cursos</h2>
+    <button 
+      class="w-full px-5 py-2 font-medium text-white transition bg-red-600 rounded-lg shadow sm:w-auto hover:bg-red-700"
+      (click)="abrirModalCrear()">
+      Crear Curso
+    </button>
+  </div>
 
-<!-- Modal de formulario -->
-<div class="modal fade" id="crearCursoModal" tabindex="-1" aria-labelledby="crearCursoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-white text-dark">
+  <!-- Modal Crear -->
+  <div *ngIf="modalCrearVisible()" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+    <div class="w-11/12 max-w-3xl p-6 overflow-y-auto transition-transform transform bg-white rounded-lg shadow-xl max-h-[90vh] scrollbar-thin scrollbar-thumb-red-400 scrollbar-track-red-100">
       <form [formGroup]="formCurso" (ngSubmit)="crearCurso()">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title" id="crearCursoLabel">Nuevo Curso</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <!-- Header modal -->
+        <div class="flex items-center justify-between pb-2 mb-4 border-b">
+          <h5 class="text-lg font-semibold text-red-800">Nuevo Curso</h5>
+          <button type="button" (click)="cerrarModalCrear()" class="text-xl font-bold text-gray-500 hover:text-red-800">✕</button>
         </div>
-        <div class="modal-body row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Carrera</label>
-            <select formControlName="carreid" class="form-select bg-white text-dark border-secondary">
-              <option *ngFor="let c of carreras" [value]="c.id">{{ c.nombre }}</option>
+
+        <!-- Grid formulario -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Carrera</label>
+            <select formControlName="carreid" class="w-full p-2 transition border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-200 focus:border-red-400">
+              <option value="" disabled>Seleccione carrera</option>
+              <option *ngFor="let c of carreras()" [value]="c.id">{{ c.nombre }}</option>
+            </select>
+            <p *ngIf="formCurso.get('carreid')?.invalid && formCurso.get('carreid')?.touched" class="mt-1 text-sm text-red-500">Campo obligatorio</p>
+          </div>
+
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Modalidad</label>
+            <select formControlName="modalidad" class="w-full p-2 transition border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-200 focus:border-red-400">
+              <option value="PRESENCIAL">PRESENCIAL</option>
+              <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
+              <option value="DISTANCIA">DISTANCIA</option>
             </select>
           </div>
 
-          <div class="col-md-6">
-          <label class="form-label">Modalidad</label>
-          <select formControlName="modalidad" class="form-select bg-white text-dark border-secondary">
-            <option value="PRESENCIAL">PRESENCIAL</option>
-            <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
-            <option value="DISTANCIA">DISTANCIA</option>
-          </select>
-        </div>
-
-          <div class="col-md-3">
-            <label class="form-label">Plan</label>
-            <select formControlName="plan" class="form-select bg-white text-dark border-secondary">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Plan</label>
+            <select formControlName="plan" class="w-full p-2 transition border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-200 focus:border-red-400">
+              <option value="" disabled>Seleccione plan</option>
               <option *ngFor="let p of planesEstudio" [value]="p">{{ p }}</option>
             </select>
+            <p *ngIf="formCurso.get('plan')?.invalid && formCurso.get('plan')?.touched" class="mt-1 text-sm text-red-500">Campo obligatorio</p>
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Ciclo</label>
-            <select formControlName="ciclo" class="form-select bg-white text-dark border-secondary">
+
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Ciclo</label>
+            <select formControlName="ciclo" class="w-full p-2 transition border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-200 focus:border-red-400">
+              <option value="" disabled>Seleccione ciclo</option>
               <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
             </select>
+            <p *ngIf="formCurso.get('ciclo')?.invalid && formCurso.get('ciclo')?.touched" class="mt-1 text-sm text-red-500">Campo obligatorio</p>
           </div>
-          <div class="col-md-6">
-            <label class="form-label">Código</label>
-            <input formControlName="codigo" class="form-control bg-white text-dark border-secondary" />
+
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Código</label>
+            <input formControlName="codigo" type="text" class="w-full p-2 transition border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-200 focus:border-red-400"/>
+            <p *ngIf="formCurso.get('codigo')?.invalid && formCurso.get('codigo')?.touched" class="mt-1 text-sm text-red-500">Campo obligatorio</p>
           </div>
-          <div class="col-md-6">
-            <label class="form-label">Nombre</label>
-            <input formControlName="nombre" class="form-control bg-white text-dark border-secondary" />
+
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Nombre</label>
+            <input formControlName="nombre" type="text" class="w-full p-2 transition border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-200 focus:border-red-400"/>
+            <p *ngIf="formCurso.get('nombre')?.invalid && formCurso.get('nombre')?.touched" class="mt-1 text-sm text-red-500">Nombre inválido</p>
           </div>
-          <div class="col-md-4">
-            <label class="form-label">Horas</label>
-            <input formControlName="horas" type="number" class="form-control bg-white text-dark border-secondary" />
+
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Horas</label>
+            <input formControlName="horas" type="number" class="w-full p-2 transition border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-200 focus:border-red-400"/>
+            <p *ngIf="formCurso.get('horas')?.invalid && formCurso.get('horas')?.touched" class="mt-1 text-sm text-red-500">Campo obligatorio</p>
           </div>
         </div>
-        <div class="modal-footer border-secondary">
-          <button type="submit" class="btn btn-success" [disabled]="formCurso.invalid" data-bs-dismiss="modal">
-            Guardar
-          </button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+        <!-- Botones -->
+        <div class="flex flex-wrap justify-end gap-2 mt-6">
+          <button type="submit" [disabled]="formCurso.invalid" class="px-5 py-2 text-white transition bg-red-600 rounded-lg shadow hover:bg-red-700">Guardar</button>
+          <button type="button" (click)="cerrarModalCrear()" class="px-5 py-2 text-red-600 transition bg-white border border-red-400 rounded-lg shadow hover:bg-red-50">Cancelar</button>
         </div>
       </form>
     </div>
   </div>
-</div>
 
-<!-- Modal de edición -->
-<div class="modal fade" id="editarCursoModal" tabindex="-1" aria-labelledby="editarCursoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-white text-dark">
-      <form [formGroup]="formEditarCurso" (ngSubmit)="actualizarCurso()">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title" id="editarCursoLabel">Editar Curso</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Carrera</label>
-            <select formControlName="carreid" class="form-select bg-white text-dark border-secondary">
-              <option *ngFor="let c of carreras" [value]="c.id">{{ c.nombre }}</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Plan</label>
-            <select formControlName="plan" class="form-select bg-white text-dark border-secondary">
-              <option *ngFor="let p of planesEstudio" [value]="p">{{ p }}</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Ciclo</label>
-            <select formControlName="ciclo" class="form-select bg-white text-dark border-secondary">
-              <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Código</label>
-            <input formControlName="codigo" class="form-control bg-white text-dark border-secondary" />
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Nombre</label>
-            <input formControlName="nombre" class="form-control bg-white text-dark border-secondary" />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Horas</label>
-            <input formControlName="horas" type="number" class="form-control bg-white text-dark border-secondary" />
-          </div>
-        </div>
-        <div class="modal-footer border-secondary">
-          <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Guardar Cambios</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Filtros -->
-<div class="row g-2 mb-4 text-dark">
-  <div class="col-md-3">
-    <input class="form-control bg-white text-dark border-secondary" placeholder="Filtrar por carrera" [(ngModel)]="filtroCarrera" (ngModelChange)="aplicarFiltros()" />
-  </div>
-  <div class="col-md-3">
-    <input class="form-control bg-white text-dark border-secondary" placeholder="Nombre del curso" [(ngModel)]="filtroNombre" (ngModelChange)="aplicarFiltros()" />
-  </div>
-  <div class="col-md-2">
-    <input class="form-control bg-white text-dark border-secondary" placeholder="Código" [(ngModel)]="filtroCodigo" (ngModelChange)="aplicarFiltros()" />
-  </div>
-  <div class="col-md-2">
-    <select class="form-select bg-white text-dark border-secondary" [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()">
+  <!-- Filtros -->
+  <div [formGroup]="filtrosForm" class="grid gap-2 mb-4 sm:grid-cols-2 md:grid-cols-6">
+    <input formControlName="carrera" placeholder="Filtrar por carrera" class="w-full p-2 border rounded-lg shadow focus:ring-1 focus:ring-red-200 focus:border-red-400"/>
+    <input formControlName="nombre" placeholder="Nombre del curso" class="w-full p-2 border rounded-lg shadow focus:ring-1 focus:ring-red-200 focus:border-red-400"/>
+    <input formControlName="codigo" placeholder="Código" class="w-full p-2 border rounded-lg shadow focus:ring-1 focus:ring-red-200 focus:border-red-400"/>
+    <select formControlName="estado" class="w-full p-2 border rounded-lg shadow focus:ring-1 focus:ring-red-200 focus:border-red-400">
       <option value="">Todos</option>
       <option value="activo">Activos</option>
       <option value="inactivo">Inactivos</option>
     </select>
-  </div>
-  <div class="col-md-1">
-    <select class="form-select bg-white text-dark border-secondary" [(ngModel)]="filtroCiclo" (ngModelChange)="aplicarFiltros()">
+    <select formControlName="ciclo" class="w-full p-2 border rounded-lg shadow focus:ring-1 focus:ring-red-200 focus:border-red-400">
       <option value="">Ciclo</option>
       <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
     </select>
-  </div>
-  <div class="col-md-1">
-    <select class="form-select bg-white text-dark border-secondary" [(ngModel)]="filtroPlan" (ngModelChange)="aplicarFiltros()">
+    <select formControlName="plan" class="w-full p-2 border rounded-lg shadow focus:ring-1 focus:ring-red-200 focus:border-red-400">
       <option value="">Plan</option>
       <option *ngFor="let p of planesEstudio" [value]="p">{{ p }}</option>
     </select>
   </div>
-</div>
 
+  <!-- Tabla responsive -->
+  <div class="overflow-x-auto bg-white rounded-lg shadow-lg scrollbar-thin scrollbar-thumb-red-400 scrollbar-track-red-100">
+    <table class="min-w-full text-sm border-collapse table-auto md:text-base">
+      <thead class="text-white bg-red-600">
+        <tr>
+          <th class="px-3 py-2 border">#</th>
+          <th class="px-3 py-2 border">Carrera</th>
+          <th class="px-3 py-2 border">Plan</th>
+          <th class="px-3 py-2 border">Ciclo</th>
+          <th class="px-3 py-2 border">Modalidad</th>
+          <th class="px-3 py-2 border">Código</th>
+          <th class="px-3 py-2 border">Nombre</th>
+          <th class="px-3 py-2 border">Horas</th>
+          <th class="px-3 py-2 border">Estado</th>
+          <th class="px-3 py-2 border">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let curso of filteredCursos(); let i = index" class="hover:bg-red-50">
+          <td class="px-3 py-2 text-center border">{{ i + 1 }}</td>
+          <td class="px-3 py-2 border">{{ obtenerNombreCarrera(curso.carreid) }}</td>
+          <td class="px-3 py-2 border">{{ curso.plan }}</td>
+          <td class="px-3 py-2 border">{{ curso.ciclo }}</td>
+          <td class="px-3 py-2 border">{{ curso.modalidad }}</td>
+          <td class="px-3 py-2 border">{{ curso.codigo }}</td>
+          <td class="px-3 py-2 border">{{ curso.nombre }}</td>
+          <td class="px-3 py-2 text-center border">{{ curso.horas }}</td>
+          <td class="px-3 py-2 text-center border">
+            <span [ngClass]="curso.estado ? 'bg-red-600 text-white px-2 py-1 rounded-lg' : 'bg-gray-300 text-gray-700 px-2 py-1 rounded-lg'">
+              {{ curso.estado ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="flex flex-wrap justify-center gap-2 px-3 py-2 border">
+            <button class="px-3 py-1 text-white transition bg-yellow-500 rounded hover:bg-yellow-600" (click)="abrirModalEditar(curso)">Editar</button>
+            <button class="px-3 py-1 text-red-600 transition bg-white border border-red-400 rounded hover:bg-red-50" (click)="cambiarEstado(curso)">
+              {{ curso.estado ? 'Desactivar' : 'Activar' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-<!-- Tabla de cursos -->
-<div class="table-responsive text-dark">
-  <table class="table table-bordered table-hover table-white align-middle">
-    <thead class="table-dark">
-      <tr>
-        <th>#</th>
-        <th>Carrera</th>
-        <th>Plan</th>
-        <th>Ciclo</th>
-        <th>Modalidad</th>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Horas</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let curso of filteredCursos; let i = index">
-        <td>{{ i + 1 }}</td>
-        <td>{{ obtenerNombreCarrera(curso.carreid) }}</td>
-        <td>{{ curso.plan }}</td>
-        <td>{{ curso.ciclo }}</td>
-        <td>{{ curso.modalidad }}</td>
-        <td>{{ curso.codigo }}</td>
-        <td>{{ curso.nombre }}</td>
-        <td>{{ curso.horas }}</td>
-        <td>
-          <span class="badge" [ngClass]="curso.estado ? 'bg-success' : 'bg-secondary'">
-            {{ curso.estado ? 'Activo' : 'Inactivo' }}
-          </span>
-        </td>
-        <td>
-          <button class="btn btn-warning" (click)="abrirModalEditar(curso)">Editar</button>
-          <button class="btn btn-sm btn-outline-danger" (click)="cambiarEstado(curso)">
-            {{ curso.estado ? 'Desactivar' : 'Activar' }}
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
 </div>

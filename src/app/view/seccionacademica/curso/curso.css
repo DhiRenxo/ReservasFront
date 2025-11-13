@@ -1,0 +1,11 @@
+  /* Scrollbar para tablas */
+  ::-webkit-scrollbar {
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(220, 38, 38, 0.5);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(229, 231, 235, 0.3);
+  }
