@@ -29,9 +29,17 @@ export class AmbienteService{
         return this.http.get<AmbienteModel>(`${this.apiUrl}/${id}`, {headers: this.getAuthHeaders()});
     }
 
-    crear(ambiente: AmbienteModel): Observable<AmbienteModel>{
-        return this.http.post<AmbienteModel>(this.apiUrl, ambiente, {headers: this.getAuthHeaders()});
-    }
+    crear(ambiente: AmbienteModel): Observable<AmbienteModel> {
+        console.log("📤 Enviando datos al backend:", ambiente);
+        console.log("🌐 Endpoint:", this.apiUrl);
+
+        return this.http.post<AmbienteModel>(
+            this.apiUrl,
+            ambiente,
+            { headers: this.getAuthHeaders() }
+        );
+        }
+
 
     actualizar(id: number, amebiente:Partial<AmbienteModel>): Observable<AmbienteModel>{
         return this.http.put<AmbienteModel>(`${this.apiUrl}/${id}`, amebiente, {headers: this.getAuthHeaders()});

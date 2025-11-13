@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { AmbienteService} from '../../core/services/ambiente.service';
-import { AmbienteModel } from '../../core/models/ambiente.models';
-import { TipoAmbienteModel } from '../../core/models/tipoambiente.models';
-import { TipoAmbienteService } from '../../core/services/tipoambiente.service';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AmbienteService } from '../../core/services/ambiente.service';
+import { TipoAmbienteService } from '../../core/services/tipoambiente.service';
+import { AmbienteModel } from '../../core/models/ambiente.models';
+import { TipoAmbienteModel } from '../../core/models/tipoambiente.models';
 import { Tipoambiente } from './tipoambiente/tipoambiente';
 
 @Component({
@@ -12,15 +12,16 @@ import { Tipoambiente } from './tipoambiente/tipoambiente';
   standalone: true,
   imports: [CommonModule, FormsModule, Tipoambiente],
   templateUrl: './ambiente.html',
-  styleUrl: './ambiente.scss'
+  styleUrls: ['./ambiente.css']
 })
 export class Ambiente implements OnInit {
-  ambientes: AmbienteModel[] = [];
-  tiposAmbiente: TipoAmbienteModel[] = [];
 
-  mostrarForm = false;
+  ambientes = signal<AmbienteModel[]>([]);
+  tiposAmbiente = signal<TipoAmbienteModel[]>([]);
+  mostrarForm = signal(false);
+  editando = signal(false);
 
-  nuevoAmbiente: AmbienteModel = {
+  nuevoAmbiente = signal<AmbienteModel>({
     id: 0,
     codigo: '',
     tipoid: 0,
@@ -28,7 +29,7 @@ export class Ambiente implements OnInit {
     equipamiento: '',
     ubicacion: '',
     activo: true
-  };
+  });
 
   constructor(
     private ambienteService: AmbienteService,
@@ -40,58 +41,32 @@ export class Ambiente implements OnInit {
     this.cargarTipos();
   }
 
-  mostrarFormulario() {
-    this.mostrarForm = true;
-  }
-
-  cancelar() {
-    this.mostrarForm = false;
-    this.resetFormulario();
-  }
-
-  cargarAmbientes() {
-    this.ambienteService.listar().subscribe(data => this.ambientes = data);
-  }
-
-  cargarTipos() {
-    this.tipoAmbienteService.getAll().subscribe(data => this.tiposAmbiente = data);
-  }
-
-  guardarAmbiente() {
-  console.log("Payload enviado:", this.nuevoAmbiente);
-
-  if(!this.nuevoAmbiente.codigo || this.nuevoAmbiente.tipoid <= 0){
-    alert("Debes completar el código y tipo de ambiente");
-    return;
-  }
-
-  this.ambienteService.crear(this.nuevoAmbiente).subscribe({
-    next: () => {
-      this.cargarAmbientes();
-      this.cancelar();
-    },
-    error: (err) => {
-      alert('Error al guardar ambiente');
-      console.error(err);
-    }
-  });
-}
-
-
-  cambiarEstado(ambiente: AmbienteModel) {
-    this.ambienteService.cambiarEstado(ambiente.id, !ambiente.activo).subscribe({
-      next: () => this.cargarAmbientes(),
-      error: (err) => console.error('Error al cambiar estado', err)
+  /** Carga los ambientes */
+  cargarAmbientes(): void {
+    this.ambienteService.listar().subscribe({
+      next: (data) => this.ambientes.set(data),
+      error: (err) => console.error('Error al listar ambientes:', err)
     });
   }
 
-  obtenerNombreTipo(id: number): string {
-    const tipo = this.tiposAmbiente.find(t => t.id === id);
-    return tipo ? tipo.nombre : 'Desconocido';
+  /** Carga los tipos de ambiente */
+  cargarTipos(): void {
+    this.tipoAmbienteService.getAll().subscribe({
+      next: (data) => this.tiposAmbiente.set(data),
+      error: (err) => console.error('Error al listar tipos:', err)
+    });
   }
 
-  resetFormulario() {
-    this.nuevoAmbiente = {
+  /** Abre o cierra el formulario */
+  toggleFormulario(): void {
+    const estado = !this.mostrarForm();
+    this.mostrarForm.set(estado);
+    if (!estado) this.resetFormulario();
+  }
+
+  /** Limpia el formulario */
+  resetFormulario(): void {
+    this.nuevoAmbiente.set({
       id: 0,
       codigo: '',
       tipoid: 0,
@@ -99,6 +74,62 @@ export class Ambiente implements OnInit {
       equipamiento: '',
       ubicacion: '',
       activo: true
-    };
+    });
+    this.editando.set(false);
+  }
+
+  /** Guarda o actualiza un ambiente */
+  guardarAmbiente(): void {
+    const amb = this.nuevoAmbiente();
+    console.log("🧩 Datos del formulario:", amb);
+
+    if (!amb.codigo || amb.tipoid <= 0) {
+      alert('⚠️ Debes completar el código y tipo de ambiente.');
+      return;
+    }
+
+    const edit = this.editando();
+    const request = edit
+      ? this.ambienteService.actualizar(amb.id, amb)
+      : this.ambienteService.crear(amb);
+
+    request.subscribe({
+      next: (res) => {
+        console.log("✅ Ambiente guardado:", res);
+        this.cargarAmbientes();
+        this.toggleFormulario();
+      },
+      error: (err) => {
+        console.error("❌ Error al guardar ambiente:", err);
+        alert(err.error?.detail || 'Error desconocido al guardar ambiente');
+      }
+    });
+  }
+
+  /** Activa el modo edición */
+  editarAmbiente(amb: AmbienteModel): void {
+    this.nuevoAmbiente.set({ ...amb });
+    this.editando.set(true);
+    this.mostrarForm.set(true);
+  }
+
+  /** Cambia el estado activo/inactivo */
+  cambiarEstado(ambiente: AmbienteModel): void {
+    this.ambienteService.cambiarEstado(ambiente.id, !ambiente.activo).subscribe({
+      next: () => this.cargarAmbientes(),
+      error: (err) => console.error('Error al cambiar estado:', err)
+    });
+  }
+
+  /** Devuelve el nombre del tipo */
+  obtenerNombreTipo(id: number): string {
+    const tipo = this.tiposAmbiente().find(t => t.id === id);
+    return tipo ? tipo.nombre : 'Desconocido';
+  }
+
+  /** Cuando se crea un nuevo tipo desde el modal hijo */
+  onTipoCreado(nuevoTipo: TipoAmbienteModel): void {
+    console.log("🎨 Nuevo tipo de ambiente recibido:", nuevoTipo);
+    this.tiposAmbiente.update(lista => [...lista, nuevoTipo]);
   }
 }

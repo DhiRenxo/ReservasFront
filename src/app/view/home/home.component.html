@@ -98,8 +98,8 @@
       <!-- DERECHA: ASIGNACIONES DOCENTE / ADMINISTRADOR -->
       <div class="right-panel">
         <!-- 📚 ASIGNACIONES DOCENTE -->
-        <div *ngIf="rol?.nombre?.toLowerCase() === 'docente'" class="card teacher-card shadow-md">
-          <h5 class="title-red text-center mb-4">📚 Asignaciones Docente</h5>
+        <div *ngIf="rol?.id === 7" class="shadow-md card teacher-card">
+          <h5 class="mb-4 text-center title-red">📚 Asignaciones Docente</h5>
 
           <!-- SECCIÓN DE CURSOS -->
           <div class="teacher-courses">
@@ -159,7 +159,7 @@
             </div>
 
             <!-- SIN CURSOS -->
-            <div *ngIf="!tieneCursosActivos" class="text-muted text-center py-3">
+            <div *ngIf="!tieneCursosActivos" class="py-3 text-center text-muted">
               No tienes asignaciones activas.
             </div>
           </div>
@@ -172,23 +172,80 @@
           </div>
         </div>
 
-        <!-- ADMINISTRADOR / COORDINADOR -->
-        <div
-          *ngIf="rol?.nombre?.toLowerCase() === 'administrador' || rol?.nombre?.toLowerCase() === 'coordinador'"
-          class="card admin-card"
+        <!-- ADMINISTRADOR -->
+    <div *ngIf="rol?.id === 2" class="p-4 card admin-card">
+      <h5 class="mb-3 title-red">⚙️ Gestión de Roles</h5>
+
+      <!-- 📋 Listado de roles -->
+      <table class="w-full text-sm border border-gray-300 rounded-md table-auto">
+        <thead class="text-gray-700 bg-gray-100">
+          <tr>
+            <th class="px-3 py-2 border">ID</th>
+            <th class="px-3 py-2 border">Nombre</th>
+            <th class="px-3 py-2 text-center border">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rol of roles" class="hover:bg-gray-50">
+            <td class="px-3 py-2 border">{{ rol.id }}</td>
+            <td class="px-3 py-2 border">
+              <input
+                *ngIf="rolEditar && rolEditar.id === rol.id"
+                [(ngModel)]="rolEditar.nombre"
+                class="w-full px-2 py-1 border rounded"
+              />
+              <span *ngIf="rolEditar?.id !== rol.id">{{ rol.nombre }}</span>
+            </td>
+            <td class="px-3 py-2 text-center border">
+              <button
+                *ngIf="rolEditar?.id !== rol.id"
+                (click)="editarRol(rol)"
+                class="px-2 py-1 mr-1 text-white bg-yellow-500 rounded"
+              >
+                ✏️ Editar
+              </button>
+              <button
+                *ngIf="rolEditar?.id === rol.id"
+                (click)="actualizarRolExistente()"
+                class="px-2 py-1 mr-1 text-white bg-green-500 rounded"
+              >
+                💾 Guardar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ➕ Crear nuevo rol -->
+      <div class="flex items-center gap-2 mt-4">
+        <input
+          [(ngModel)]="nuevoRolNombre"
+          type="text"
+          placeholder="Nuevo rol..."
+          class="w-full px-2 py-1 border rounded"
+        />
+        <button
+          (click)="crearRol()"
+          class="px-3 py-1 text-white bg-blue-600 rounded"
         >
-          <h6 class="title-red">Administrador</h6>
-          <ul>
-            <li *ngFor="let asignacion of asignaciones">
-              {{ asignacion.plan }} - {{ asignacion.ciclo }}<br />
-              <small [style.color]="asignacion.estado ? '#2ECC71' : '#E50914'">
-                {{ asignacion.estado ? 'Activo' : 'Inactivo' }}
-              </small>
-            </li>
-          </ul>
-        </div>
+          ➕ Crear
+        </button>
+      </div>
+
+      <!-- 📜 Asignaciones (ya existente) -->
+      <div class="mt-6">
+        <h6 class="title-red">📜 Asignaciones registradas</h6>
+        <ul class="mt-2 text-sm">
+          <li *ngFor="let asignacion of asignaciones" class="py-1 border-b">
+            {{ asignacion.plan }} - {{ asignacion.ciclo }}
+            <small [style.color]="asignacion.estado ? '#2ECC71' : '#E50914'">
+              {{ asignacion.estado ? 'Activo' : 'Inactivo' }}
+            </small>
+          </li>
+        </ul>
       </div>
     </div>
+
 
     <!-- MODAL DISPONIBILIDAD DOCENTE -->
     <div *ngIf="modalDisponibilidadVisible" class="modal-overlay">

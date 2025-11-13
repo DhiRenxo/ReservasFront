@@ -104,14 +104,13 @@ export class HomeComponent implements OnInit {
     this.rolService.obtener(user.rolid).subscribe({
       next: (r: Rol) => {
         this.rol = r;
-        const rolNombre = r.nombre.toLowerCase();
-        if (rolNombre === 'administrador') { 
+        if (r.id === 2) { 
           this.cargarUsuarios(); 
           this.cargarRoles(); 
           this.cargarAsignaciones(); 
         }
-        if (rolNombre === 'coordinador') this.cargarAsignaciones();
-        if (rolNombre === 'docente') { 
+        if (r.id === 4) this.cargarAsignaciones();
+        if (r.id === 7) { 
           this.cargarCursosAsignados(user.correo); 
           this.obtenerIdDocenteYDisponibilidad(user.correo); 
         }

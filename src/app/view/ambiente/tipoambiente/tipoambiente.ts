@@ -1,80 +1,108 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgClass, NgStyle } from '@angular/common';
 import { TipoAmbienteService } from '../../../core/services/tipoambiente.service';
 import { TipoAmbienteModel } from '../../../core/models/tipoambiente.models';
-
-declare var bootstrap: any;
 
 @Component({
   selector: 'app-tipoambiente',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, NgClass, NgStyle],
   templateUrl: './tipoambiente.html',
-  styleUrl: './tipoambiente.scss'
+  styleUrls: ['./tipoambiente.css']
 })
 export class Tipoambiente {
+  @Output() tipoCreado = new EventEmitter<TipoAmbienteModel>();
+
+  modalVisible = false;
+  editando = false;
+
   nuevoTipo: TipoAmbienteModel = {
     id: 0,
     nombre: '',
     colorhex: '#000000'
   };
 
-  alerta = {
-    tipo: '',
-    mensaje: ''
-  };
+  alerta = { tipo: '', mensaje: '' };
 
-  colorPersonalizado: string = '#000000';
-  colorValido: boolean = true;
-  mostrarPaletaExtendida: boolean = false;
+  colorPersonalizado = '#000000';
+  colorValido = true;
+  mostrarPaletaExtendida = false;
 
   coloresBasicos = [
-    { nombre: 'Rojo', hex: '#FF0000' },
-    { nombre: 'Azul', hex: '#0000FF' },
-    { nombre: 'Verde', hex: '#008000' },
-    { nombre: 'Amarillo', hex: '#FFFF00' },
-    { nombre: 'Negro', hex: '#000000' },
+    { nombre: 'Rojo', hex: '#E11D48' },
     { nombre: 'Blanco', hex: '#FFFFFF' },
-    { nombre: 'Naranja', hex: '#FFA500' },
-    { nombre: 'Morado', hex: '#800080' },
+    { nombre: 'Negro', hex: '#000000' },
+    { nombre: 'Gris', hex: '#9CA3AF' },
+    { nombre: 'Azul', hex: '#2563EB' },
+    { nombre: 'Verde', hex: '#16A34A' },
+    { nombre: 'Amarillo', hex: '#FACC15' },
+    { nombre: 'Morado', hex: '#7C3AED' }
   ];
 
   coloresExtendidos = [
-    { nombre: 'Turquesa', hex: '#40E0D0' },
-    { nombre: 'Coral', hex: '#FF7F50' },
-    { nombre: 'Marrón', hex: '#A52A2A' },
-    { nombre: 'Rosado', hex: '#FFC0CB' },
-    { nombre: 'Gris', hex: '#808080' },
-    { nombre: 'Oliva', hex: '#808000' },
-    { nombre: 'Cian', hex: '#00FFFF' },
-    { nombre: 'Dorado', hex: '#FFD700' },
+    { nombre: 'Coral', hex: '#FB7185' },
+    { nombre: 'Turquesa', hex: '#14B8A6' },
+    { nombre: 'Dorado', hex: '#FBBF24' },
+    { nombre: 'Rosa', hex: '#F472B6' },
+    { nombre: 'Cian', hex: '#06B6D4' },
+    { nombre: 'Oliva', hex: '#84CC16' },
+    { nombre: 'Marrón', hex: '#92400E' },
+    { nombre: 'Gris oscuro', hex: '#374151' }
   ];
 
-  constructor(
-    private tipoAmbienteService: TipoAmbienteService
-  ) {}
+  constructor(private tipoAmbienteService: TipoAmbienteService) {}
+
+  abrirModal() {
+    this.modalVisible = true;
+  }
+
+  cerrarModal() {
+    this.modalVisible = false;
+    this.editando = false;
+    this.resetForm();
+  }
+
+  editarTipo(tipo: TipoAmbienteModel) {
+    this.nuevoTipo = { ...tipo };
+    this.colorPersonalizado = tipo.colorhex;
+    this.editando = true;
+    this.modalVisible = true;
+  }
 
   guardarTipoAmbiente() {
-    this.tipoAmbienteService.post(this.nuevoTipo).subscribe({
-      next: () => {
-        this.mostrarAlerta('success', 'Tipo de ambiente creado correctamente.');
+    if (!this.nuevoTipo.nombre.trim()) {
+      this.mostrarAlerta('error', 'El nombre es obligatorio.');
+      return;
+    }
+
+    const request = this.editando
+      ? this.tipoAmbienteService.put(this.nuevoTipo.id, this.nuevoTipo)
+      : this.tipoAmbienteService.post(this.nuevoTipo);
+
+    request.subscribe({
+      next: (res) => {
+        this.mostrarAlerta('success', this.editando
+          ? 'Tipo de ambiente actualizado correctamente.'
+          : 'Tipo de ambiente creado correctamente.'
+        );
+
+        this.tipoCreado.emit(res);
         this.resetForm();
-        const modal = document.getElementById('modalTipoAmbiente');
-        if (modal) {
-          const modalInstance = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
-          modalInstance.hide();
-        }
+        this.cerrarModal();
       },
       error: () => {
-        this.mostrarAlerta('error', 'Error al crear el tipo de ambiente.');
+        this.mostrarAlerta('error', this.editando
+          ? 'Error al actualizar el tipo de ambiente.'
+          : 'Error al crear el tipo de ambiente.'
+        );
       }
     });
   }
 
   seleccionarColor(color: { nombre: string; hex: string }) {
     this.nuevoTipo.colorhex = color.hex;
-    this.colorPersonalizado = ''
+    this.colorPersonalizado = '';
     this.colorValido = true;
   }
 
@@ -84,7 +112,9 @@ export class Tipoambiente {
   }
 
   esColorPersonalizado(): boolean {
-    return ![...this.coloresBasicos, ...this.coloresExtendidos].some(c => c.hex === this.nuevoTipo.colorhex);
+    return ![...this.coloresBasicos, ...this.coloresExtendidos].some(
+      c => c.hex === this.nuevoTipo.colorhex
+    );
   }
 
   alternarPaleta() {
@@ -92,20 +122,13 @@ export class Tipoambiente {
   }
 
   mostrarAlerta(tipo: 'success' | 'error', mensaje: string) {
-    this.alerta.tipo = tipo;
-    this.alerta.mensaje = mensaje;
-    setTimeout(() => {
-      this.alerta.tipo = '';
-      this.alerta.mensaje = '';
-    }, 3000);
+    this.alerta = { tipo, mensaje };
+    setTimeout(() => (this.alerta = { tipo: '', mensaje: '' }), 3000);
   }
 
   resetForm() {
-    this.nuevoTipo = {
-      id: 0,
-      nombre: '',
-      colorhex: '#000000'
-    };
+    this.nuevoTipo = { id: 0, nombre: '', colorhex: '#000000' };
+    this.colorPersonalizado = '#000000';
     this.colorValido = true;
   }
 }

@@ -32,4 +32,9 @@ export class TipoAmbienteService{
     post(tipo: TipoAmbienteModel): Observable<TipoAmbienteModel>{
         return this.http.post<TipoAmbienteModel>(this.apiUrl, tipo, {headers: this.getAuthHeaders()})
     }
+    put(id: number, tipo: TipoAmbienteModel): Observable<TipoAmbienteModel> {
+    return this.http.put<TipoAmbienteModel>(`${this.apiUrl}/${id}`, tipo, {
+        headers: this.getAuthHeaders()
+    });
+    }
 }
