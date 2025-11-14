@@ -1,195 +1,231 @@
-<div class="main-container">
-<div class="p-4 space-y-4">
-  <h2 class="text-xl font-bold">Gestión de Secciones</h2>
+<!-- Container -->
+<div class="min-h-screen p-4 text-gray-900" style="background: linear-gradient(180deg, #FFFFFF 0%, #FCE8E8 100%);">
+  <div class="mx-auto max-w-7xl">
 
-  <!-- Botón para abrir el modal -->
-  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearSeccion">
-    Crear Nueva Sección
-  </button>
+    <!-- Header -->
+    <div class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+      <h2 class="text-2xl font-semibold" style="color:#B00020;">Gestión de Secciones</h2>
 
-  <!-- Modal de Creación de Sección -->
-  <div class="modal fade" id="modalCrearSeccion" tabindex="-1" aria-labelledby="modalCrearSeccionLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalCrearSeccionLabel">Crear Nueva Sección</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Formulario -->
-          <!-- Carrera -->
-          <label class="form-label">Carrera:</label>
-          <select class="form-select" [(ngModel)]="selectedCarreraId" (change)="onCarreraChange()" *ngIf="carreras?.length">
-            <option [value]="null" disabled selected>Seleccione una carrera</option>
-            <option *ngFor="let c of carreras" [value]="c.id">{{ c.nombre }}</option>
+      <div class="flex gap-2">
+        <button
+          (click)="openCrearModal()"
+          class="inline-flex items-center gap-2 px-4 py-2 text-white transition rounded-lg shadow-sm"
+          style="background:#B00020; box-shadow: 0 6px 18px rgba(176,0,32,0.12);">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke:#fff;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Crear Nueva Sección
+        </button>
+      </div>
+    </div>
+
+    <!-- Success toast -->
+    <div *ngIf="seccionCreada" class="fixed z-50 right-5 top-5">
+      <div style="background:#B00020; color:#fff; padding:10px 14px; border-radius:8px; box-shadow:0 6px 18px rgba(176,0,32,0.15); animation: pop .35s ease;">
+        ✅ Sección creada exitosamente
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="background:#fff; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.04);" class="p-4 mb-6">
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-6">
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700">Carrera</label>
+          <select class="block w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="filtros.carreraId" (change)="aplicarFiltros()">
+            <option [ngValue]="null">Todas las carreras</option>
+            <option *ngFor="let c of carreras" [ngValue]="c.id">{{ c.nombre }}</option>
           </select>
-
-          <!-- Ciclo -->
-          <label class="form-label mt-2">Ciclo:</label>
-          <select class="form-select" [(ngModel)]="seccion.ciclo" (change)="updateNombre()">
-            <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
-          </select>
-
-          <!-- Letra -->
-          <label class="form-label mt-2">Letra:</label>
-          <input class="form-control" [(ngModel)]="seccion.letra" maxlength="1" (input)="updateNombre()">
-
-          <!-- Turno -->
-          <label class="form-label mt-2">Turno:</label>
-          <select class="form-select" [(ngModel)]="seccion.turno" (change)="updateNombre()">
-            <option value="M">Mañana</option>
-            <option value="T">Tarde</option>
-            <option value="N">Noche</option>
-          </select>
-
-          <!-- Serie -->
-          <label class="form-label mt-2">Serie:</label>
-          <select class="form-select" [(ngModel)]="seccion.serie" (change)="updateNombre()">
-            <option [value]="1">1</option>
-            <option [value]="2">2</option>
-          </select>
-
-          <!-- Fechas -->
-          <label class="form-label mt-2">Fecha Inicio:</label>
-          <input type="date" class="form-control" [(ngModel)]="seccion.fecha_inicio">
-
-          <label class="form-label mt-2">Fecha Fin:</label>
-          <input type="date" class="form-control" [(ngModel)]="seccion.fecha_fin">
-
-          <!-- Nombre generado -->
-          <label class="form-label mt-2">Nombre de Sección:</label>
-          <input class="form-control bg-light" [value]="seccion.nombre" disabled>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button (click)="crearSeccion()" type="button" class="btn btn-success" data-bs-dismiss="modal">
-            Crear Sección
-          </button>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Estado</label>
+          <select class="block w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="filtros.estado" (change)="aplicarFiltros()">
+            <option [ngValue]="null">Todos</option>
+            <option [ngValue]="true">Activo</option>
+            <option [ngValue]="false">Inactivo</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Fecha Inicio</label>
+          <input type="date" class="block w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="filtros.fechaInicio" (change)="aplicarFiltros()">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Fecha Fin</label>
+          <input type="date" class="block w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="filtros.fechaFin" (change)="aplicarFiltros()">
+        </div>
+
+        <div class="flex items-end">
+          <button class="w-full px-3 py-2 text-sm border rounded-md" (click)="resetearFiltros()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secciones grid -->
+    <div *ngIf="cargando" class="flex justify-center py-10">
+      <div style="width:48px;height:48px;border-radius:50%;border:4px solid #F3F4F6;border-top-color:#B00020; animation: spin 1s linear infinite;"></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+      <div *ngFor="let s of seccionesPaginadas" class="cursor-pointer" (click)="toggleEstado(s)">
+        <div style="background:#fff; border-radius:12px; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,0.04); transition:transform .15s ease, box-shadow .15s ease;"
+             class="hover:-translate-y-1 hover:shadow-lg">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-lg font-semibold" style="color:#B00020;">{{ s.nombre }}</div>
+              <div class="mt-1 text-sm" style="color:#6B7280;">{{ getNombreCarrera(s.carreraid) }}</div>
+            </div>
+            <span class="px-3 py-1 text-sm font-medium rounded-full"
+                  [ngClass]="s.estado ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'">
+              {{ s.estado ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+
+          <div class="flex flex-col gap-1 mt-4 text-xs" style="color:#6B7280;">
+            <div>Inicia: <span class="text-sm" style="color:#374151">{{ s.fecha_inicio | date:'dd/MM/yyyy' }}</span></div>
+            <div>Finaliza: <span class="text-sm" style="color:#374151">{{ s.fecha_fin | date:'dd/MM/yyyy' }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-center mt-6">
+      <nav class="inline-flex -space-x-px rounded-md shadow-sm" role="navigation" aria-label="Paginación">
+        <button (click)="paginaActual = Math.max(1, paginaActual - 1)" [disabled]="paginaActual===1"
+                class="px-3 py-2 bg-white border rounded-l-md">Anterior</button>
+
+        <button *ngFor="let i of [].constructor(totalPaginas); let idx = index"
+                (click)="paginaActual = idx + 1"
+                [ngClass]="paginaActual === (idx+1) ? 'bg-[#B00020] text-white' : 'bg-white text-gray-700'"
+                class="px-3 py-2 border">
+          {{ idx + 1 }}
+        </button>
+
+        <button (click)="paginaActual = Math.min(totalPaginas, paginaActual + 1)" [disabled]="paginaActual===totalPaginas"
+                class="px-3 py-2 bg-white border rounded-r-md">Siguiente</button>
+      </nav>
+    </div>
+
+  </div>
+</div>
+
+<!-- Create Section Modal (Tailwind-like) -->
+<div *ngIf="mostrarCrearModal" class="fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true">
+  <div (click)="cerrarModal()" style="position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter: blur(2px);"></div>
+
+  <div style="width:100%; max-width:740px; margin:0 16px; z-index:60;">
+    <div style="border-radius:14px; background:#fff; overflow:hidden; box-shadow:0 14px 40px rgba(0,0,0,0.12);">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid #F3F4F6;">
+        <h3 style="margin:0; color:#B00020; font-size:18px; font-weight:600;">Crear Nueva Sección</h3>
+        <button (click)="cerrarModal()" aria-label="Cerrar" style="background:transparent; border:none; font-size:20px; color:#374151;">✕</button>
+      </div>
+
+      <div style="padding:20px;">
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Carrera</label>
+            <select class="w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="selectedCarreraId" (change)="onCarreraChange()">
+              <option [value]="null">Seleccione una carrera</option>
+              <option *ngFor="let c of carreras" [value]="c.id">{{ c.nombre }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Ciclo</label>
+            <select class="w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="seccion.ciclo" (change)="updateNombre()">
+              <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Letra</label>
+            <input class="w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="seccion.letra" maxlength="1" (input)="updateNombre()">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Turno</label>
+            <select class="w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="seccion.turno" (change)="updateNombre()">
+              <option value="M">Mañana</option>
+              <option value="T">Tarde</option>
+              <option value="N">Noche</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Serie</label>
+            <select class="w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="seccion.serie" (change)="updateNombre()">
+              <option [value]="1">1</option>
+              <option [value]="2">2</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Nombre de Sección</label>
+            <input class="w-full mt-1 rounded-md bg-[#FAFAFA] px-3 py-2 border" [value]="seccion.nombre" disabled>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Fecha Inicio</label>
+            <input type="date" class="w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="seccion.fecha_inicio">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium" style="color:#374151;">Fecha Fin</label>
+            <input type="date" class="w-full px-3 py-2 mt-1 border-gray-200 rounded-md" [(ngModel)]="seccion.fecha_fin">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button class="px-4 py-2 bg-[#F3F4F6] rounded-md" (click)="cerrarModal()">Cancelar</button>
+          <button class="px-4 py-2 rounded-md" style="background:#B00020; color:#fff;" (click)="crearSeccion()">Crear Sección</button>
         </div>
       </div>
     </div>
   </div>
-
-    <div *ngIf="seccionCreada" class="alert-success fade-in-out">
-        ✅ ¡Sección creada exitosamente!
-    </div>
-
-
-  <!-- Lista de secciones -->
-  <hr>
-  <div class="row mb-3">
-  <div class="col-md-3">
-    <label>Carrera:</label>
-    <select [(ngModel)]="filtros.carreraId" (change)="aplicarFiltros()">
-        <option [ngValue]="null">Todas las carreras</option>
-        <option *ngFor="let c of carreras" [ngValue]="c.id">{{ c.nombre }}</option>
-    </select>
-    </div>
-
-
-  <div class="col-md-2">
-    <label>Estado:</label>
-    <select [(ngModel)]="filtros.estado" (change)="aplicarFiltros()">
-    <option [ngValue]="null">Todos</option>
-    <option [ngValue]="true">Activo</option>
-    <option [ngValue]="false">Inactivo</option>
-    </select>
-
-  </div>
-
-  <div class="col-md-3">
-    <label>Fecha Inicio:</label>
-    <input type="date" class="form-control" [(ngModel)]="filtros.fechaInicio" (change)="aplicarFiltros()">
-  </div>
-
-  <div class="col-md-3">
-    <label>Fecha Fin:</label>
-    <input type="date" class="form-control" [(ngModel)]="filtros.fechaFin" (change)="aplicarFiltros()">
-  </div>
-
-  <div class="col-md-1 d-flex align-items-end">
-    <button class="btn btn-outline-secondary w-100" (click)="resetearFiltros()">Limpiar</button>
-  </div>
 </div>
-  <h3 class="text-lg font-semibold mt-4">Secciones existentes</h3>
-  <div *ngIf="cargando" class="spinner-container">
-     <div class="spinner"></div>
+
+<!-- Confirm Inactivate Modal -->
+<div *ngIf="mostrarConfirmInactivar" class="fixed inset-0 z-50 flex items-center justify-center">
+  <div (click)="cancelarInactivar()" style="position:fixed; inset:0; background:rgba(0,0,0,0.45)"></div>
+  <div style="z-index:60; width:100%; max-width:520px; background:#fff; border-radius:12px; padding:18px; box-shadow:0 14px 40px rgba(0,0,0,0.12);">
+    <p class="text-lg font-medium" style="color:#111827;">¿Deseas marcar esta sección como inactiva?</p>
+    <div class="flex justify-end gap-2 mt-4">
+      <button class="px-3 py-2 bg-[#F3F4F6] rounded-md" (click)="cancelarInactivar()">Cancelar</button>
+      <button class="px-3 py-2" style="background:#B00020; color:#fff; border-radius:8px;" (click)="confirmarInactivar()">Sí, marcar inactiva</button>
     </div>
-
-  <div class="row">
-    <div
-        class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 col-xxl-1 mb-3"
-        *ngFor="let s of seccionesPaginadas"
-    >
-        <div class="seccion-card" (click)="toggleEstado(s)">
-        <div class="nombre-seccion">{{ s.nombre }}</div>
-
-        <span class="estado" [ngClass]="{ 'activo': s.estado, 'inactivo': !s.estado }">
-            {{ s.estado ? 'Activo' : 'Inactivo' }}
-        </span><br />
-
-        <div class="badge-container">
-         <span class="fecha-badge">Inicia {{ s.fecha_inicio | date: 'dd/MM/yyyy' }}</span>
-         <span class="fecha-badge"> {{ s.fecha_fin | date: 'dd/MM/yyyy' }}</span>
-        </div>
-
-        </div>
-
-    </div>
-    </div>
-
-    <nav class="text-center my-3">
-  <ul class="pagination justify-content-center flex-wrap">
-    <li class="page-item" [class.disabled]="paginaActual === 1">
-      <button class="page-link" (click)="paginaActual = paginaActual - 1">Anterior</button>
-    </li>
-
-    <li class="page-item" *ngFor="let i of [].constructor(totalPaginas); let idx = index"
-        [class.active]="paginaActual === (idx + 1)">
-      <button class="page-link" (click)="paginaActual = idx + 1">{{ idx + 1 }}</button>
-    </li>
-
-    <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
-      <button class="page-link" (click)="paginaActual = paginaActual + 1">Siguiente</button>
-    </li>
-  </ul>
-</nav>
- <div *ngIf="mostrarConfirmInactivar" class="modal-overlay-inactivar">
-  <div class="modal-confirm-inactivar">
-    <p>¿Deseas marcar esta sección como inactiva?</p>
-
-    <div *ngIf="mensajeEstado" class="alert alert-success">{{ mensajeEstado }}</div>
-    <div *ngIf="errorEstado" class="alert alert-danger">{{ errorEstado }}</div>
-
-    <button (click)="confirmarInactivar()">Sí</button>
-    <button (click)="cancelarInactivar()">Cancelar</button>
+    <div *ngIf="mensajeEstado" style="color:#059669; margin-top:10px;">{{ mensajeEstado }}</div>
+    <div *ngIf="errorEstado" style="color:#DC2626; margin-top:10px;">{{ errorEstado }}</div>
   </div>
 </div>
 
+<!-- Reactivate Prompt -->
+<div *ngIf="mostrarPromptFecha" class="fixed inset-0 z-50 flex items-center justify-center">
+  <div (click)="cancelarReactivar()" style="position:fixed; inset:0; background:rgba(0,0,0,0.45)"></div>
+  <div style="z-index:60; width:100%; max-width:520px; background:#fff; border-radius:12px; padding:18px; box-shadow:0 14px 40px rgba(0,0,0,0.12);">
+    <p class="text-lg font-medium" style="color:#111827;">Ingrese la nueva fecha de inicio y fin:</p>
 
-<div *ngIf="mostrarPromptFecha" class="modal-overlay-fecha">
-  <div class="modal-fecha">
-    <p>Ingrese la nueva fecha de inicio y fin:</p>
+    <div class="grid grid-cols-1 gap-2 mt-3">
+      <label class="text-sm font-medium">Fecha Inicio</label>
+      <input type="date" class="px-3 py-2 border-gray-200 rounded-md" [(ngModel)]="fechaNuevaInicio">
 
-    <label for="fechaInicio">Fecha de inicio:</label>
-    <input type="date" id="fechaInicio" [(ngModel)]="fechaNuevaInicio" />
-
-    <label for="fechaFin" class="mt-2">Fecha de fin:</label>
-    <input type="date" id="fechaFin" [(ngModel)]="fechaNuevaFin" />
-
-    <div *ngIf="mensajeEstado" class="alert alert-success mt-2">{{ mensajeEstado }}</div>
-    <div *ngIf="errorEstado" class="alert alert-danger mt-2">{{ errorEstado }}</div>
-
-    <div class="d-flex justify-content-end gap-2 mt-3">
-      <button class="btn btn-success" (click)="confirmarReactivar()">Aceptar</button>
-      <button class="btn btn-secondary" (click)="cancelarReactivar()">Cancelar</button>
+      <label class="mt-2 text-sm font-medium">Fecha Fin</label>
+      <input type="date" class="px-3 py-2 border-gray-200 rounded-md" [(ngModel)]="fechaNuevaFin">
     </div>
+
+    <div class="flex justify-end gap-2 mt-4">
+      <button class="px-3 py-2 bg-[#F3F4F6] rounded-md" (click)="cancelarReactivar()">Cancelar</button>
+      <button class="px-3 py-2" style="background:#B00020; color:#fff; border-radius:8px;" (click)="confirmarReactivar()">Aceptar</button>
+    </div>
+
+    <div *ngIf="mensajeEstado" style="color:#059669; margin-top:10px;">{{ mensajeEstado }}</div>
+    <div *ngIf="errorEstado" style="color:#DC2626; margin-top:10px;">{{ errorEstado }}</div>
   </div>
 </div>
-</div>
 
-
-
-
-</div>
+<!-- small animations -->
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pop { from { transform: scale(.98); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+</style>

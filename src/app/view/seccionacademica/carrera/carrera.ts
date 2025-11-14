@@ -38,7 +38,7 @@ export class Carrera implements OnInit {
     this.listar();
   }
 
-   listar(): void {
+  listar(): void {
     this.carreraService.listar().subscribe(data => {
       this.carreras = data;
       this.totalPages = Math.ceil(this.carreras.length / this.itemsPerPage);
@@ -62,7 +62,6 @@ export class Carrera implements OnInit {
     if (this.carreraForm.invalid) return;
 
     if (this.editMode && this.currentId !== null) {
-      
       this.carreraService.actualizar(this.currentId, this.carreraForm.value).subscribe(() => {
         this.resetForm();
         this.listar();
@@ -91,9 +90,9 @@ export class Carrera implements OnInit {
     this.editMode = false;
     this.currentId = null;
     this.carreraForm.reset({
-    nombre: '',
-    nomenglatura: '',
-    status: true 
+      nombre: '',
+      nomenglatura: '',
+      status: true
     });
   }
 }

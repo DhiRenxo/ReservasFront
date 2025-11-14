@@ -12,6 +12,7 @@ export class NotificacionService {
 
   constructor(private http: HttpClient) {}
 
+  /** 🔐 Headers con token */
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
     return new HttpHeaders({
@@ -20,9 +21,19 @@ export class NotificacionService {
     });
   }
 
+  /** 📢 1. Notificación de ASIGNACIÓN */
   enviarNotificacionAsignacion(asignacionId: number): Observable<any> {
     return this.http.post<any>(
       `${this.baseUrl}/asignacion/${asignacionId}`,
+      {},
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  /** 📘 2. Confirmación de horario publicado */
+  enviarConfirmacionHorario(asignacionId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/confirmacion/${asignacionId}`,
       {},
       { headers: this.getAuthHeaders() }
     );

@@ -1,114 +1,124 @@
-<!-- OVERLAY PARA MÓVIL -->
+<!-- OVERLAY (solo móvil cuando sidebar abierto) -->
 <div
-  *ngIf="showOverlay"
-  class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-  (click)="toggleSidebar()"
+  *ngIf="isMobile && sidebarOpen"
+  class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+  (click)="closeSidebarMobile()"
 ></div>
 
 <!-- SIDEBAR -->
 <div
-  class="fixed top-0 left-0 h-screen flex flex-col bg-gradient-to-b from-neutral-900 via-black to-neutral-950 text-gray-200 shadow-2xl border-r border-red-900/30 transition-all duration-300 ease-in-out z-50"
+  class="fixed top-0 left-0 z-50 flex flex-col h-screen text-gray-200 transition-all duration-300 ease-in-out border-r shadow-2xl bg-gradient-to-b from-neutral-950 via-black to-neutral-900 border-red-900/40"
+
   [ngClass]="{
-    'w-64 translate-x-0': !isCollapsed,
-    'w-20 translate-x-0': isCollapsed
+    'translate-x-0 w-64': !isCollapsed,
+    'translate-x-0 w-20': isCollapsed,
+    '-translate-x-full': isMobile && !sidebarOpen
   }"
 >
-
   <!-- BOTÓN COLAPSAR -->
   <div class="flex justify-end p-3">
     <button
       (click)="toggleSidebar()"
-      class="p-2 text-gray-400 hover:text-red-500 transition transform hover:scale-110"
-      [attr.title]="isCollapsed ? 'Expandir menú' : 'Colapsar menú'"
+      class="p-2 text-gray-400 transition transform hover:text-red-400 hover:scale-110"
     >
-      <i [class]="isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
+      <i [class]="isCollapsed ? 'fas fa-bars' : 'fas fa-chevron-left'"></i>
     </button>
   </div>
 
   <!-- PERFIL -->
-  <div class="flex flex-col items-center text-center mb-6 px-3" *ngIf="usuario">
+  <div class="flex flex-col items-center px-3 mb-6 text-center" *ngIf="usuario">
     <div class="relative">
       <img
         *ngIf="usuario.foto_url; else noFoto"
         [src]="usuario.foto_url"
-        class="w-16 h-16 rounded-full border-2 border-red-600 shadow-md object-cover mb-2 transition-all duration-300 hover:scale-105"
+        class="object-cover w-16 h-16 mb-2 transition border-2 border-red-600 rounded-full shadow-md hover:scale-105"
       />
       <ng-template #noFoto>
-        <div class="w-16 h-16 flex items-center justify-center rounded-full bg-gray-700 border-2 border-red-500 mb-2">
-          <i class="fas fa-user text-gray-300 text-lg"></i>
+        <div class="flex items-center justify-center w-16 h-16 mb-2 bg-gray-700 border-2 border-red-600 rounded-full">
+          <i class="text-lg text-gray-300 fas fa-user"></i>
         </div>
       </ng-template>
     </div>
+
     <div *ngIf="!isCollapsed" class="text-sm">
-      <span class="font-semibold block text-white">{{ usuario.nombre }}</span>
-      <small class="text-gray-400">{{ obtenerRolTexto(usuario.rolid) }}</small>
+      <span class="block font-semibold text-white">{{ usuario.nombre }}</span>
+      <small class="text-red-400">{{ obtenerRolTexto(usuario.rolid) }}</small>
     </div>
   </div>
 
   <!-- MENÚ -->
-  <ul class="flex-1 overflow-y-auto px-3 space-y-1 custom-scroll">
+  <ul class="flex-1 px-3 space-y-1 overflow-y-auto custom-scroll">
     <li *ngFor="let item of menu" class="relative group">
-      <ng-container *ngIf="item.items; else normalItem">
-        <!-- Submenú -->
+
+      <!-- MENU CON SUB-ITEMS -->
+      <ng-container *ngIf="item.items; else simpleItem">
+
         <button
           (click)="item.expanded = !item.expanded"
-          class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-red-600/20 transition-all"
-          [attr.title]="isCollapsed ? item.label : null"
+          class="flex items-center justify-between w-full px-3 py-2 transition rounded-lg hover:bg-red-700/20"
         >
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <i class="{{ item.icon }} text-red-500"></i>
             <span *ngIf="!isCollapsed">{{ item.label }}</span>
           </div>
-          <i *ngIf="!isCollapsed"
-             class="fas text-xs"
-             [ngClass]="item.expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          <i *ngIf="!isCollapsed" [class]="item.expanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
         </button>
 
-        <!-- Subitems -->
-        <ul *ngIf="item.expanded && !isCollapsed" class="pl-8 space-y-1 mt-1">
-          <li *ngFor="let subItem of item.items">
-            <a [routerLink]="subItem.route"
-               routerLinkActive="bg-red-600/20 text-red-400"
-               class="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-red-600/20 transition">
-              <i class="{{ subItem.icon }}"></i>
-              <span>{{ subItem.label }}</span>
+        <!-- SUBMENÚ -->
+        <ul *ngIf="item.expanded && !isCollapsed" class="pl-8 mt-1 space-y-1">
+          <li *ngFor="let sub of item.items">
+            <a 
+              [routerLink]="sub.route"
+              routerLinkActive="bg-red-700/30 text-red-300"
+              class="flex items-center gap-2 px-3 py-2 transition rounded-md hover:bg-red-700/20"
+              (click)="autoCloseOnMobile()"
+            >
+              <i class="{{ sub.icon }}"></i>
+              <span>{{ sub.label }}</span>
             </a>
           </li>
         </ul>
+
       </ng-container>
 
-      <!-- Ítem simple -->
-      <ng-template #normalItem>
-        <a [routerLink]="item.route"
-           routerLinkActive="bg-red-600/20 text-red-400"
-           class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-600/20 transition"
-           [attr.title]="isCollapsed ? item.label : null">
+      <!-- MENU SIMPLE -->
+      <ng-template #simpleItem>
+        <a 
+          [routerLink]="item.route"
+          routerLinkActive="bg-red-700/30 text-red-300"
+          class="flex items-center gap-3 px-3 py-2 transition rounded-lg hover:bg-red-700/20"
+          (click)="autoCloseOnMobile()"
+        >
           <i class="{{ item.icon }} text-red-500"></i>
           <span *ngIf="!isCollapsed">{{ item.label }}</span>
         </a>
       </ng-template>
 
-      <!-- Tooltip visible SOLO cuando está colapsado -->
+      <!-- TOOLTIP -->
       <span
         *ngIf="isCollapsed"
-        class="absolute left-full ml-3 px-2 py-1 rounded-md bg-neutral-800 text-xs text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+        class="absolute px-2 py-1 ml-3 text-xs text-gray-200 transition-opacity rounded-md opacity-0 left-full bg-neutral-800 group-hover:opacity-100 whitespace-nowrap"
       >
         {{ item.label }}
       </span>
+
     </li>
   </ul>
 
-  <!-- AJUSTES / CERRAR SESIÓN -->
-  <div class="border-t border-neutral-700 mt-auto px-3 py-3">
-    <a href="#" class="flex items-center gap-2 px-2 py-2 text-gray-400 hover:text-red-400 hover:bg-neutral-800 rounded-md transition"
-       [attr.title]="isCollapsed ? 'Ajustes' : null">
+  <!-- FOOTER -->
+  <div class="px-4 py-3 mt-auto border-t border-neutral-700">
+    <a class="flex items-center gap-3 px-2 py-2 text-gray-300 transition rounded-md hover:text-red-300 hover:bg-neutral-800">
       <i class="fas fa-cog"></i>
       <span *ngIf="!isCollapsed">Ajustes</span>
     </a>
-    <a href="#" class="flex items-center gap-2 px-2 py-2 text-red-500 hover:text-white hover:bg-red-600 rounded-md transition"
-       [attr.title]="isCollapsed ? 'Cerrar sesión' : null">
+
+    <a 
+      class="flex items-center gap-3 px-2 py-2 text-red-500 transition rounded-md hover:text-white hover:bg-red-600"
+      (click)="autoCloseOnMobile()"
+    >
       <i class="fas fa-sign-out-alt"></i>
       <span *ngIf="!isCollapsed">Cerrar Sesión</span>
     </a>
   </div>
+
 </div>

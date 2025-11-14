@@ -1,45 +1,89 @@
+<div class="min-h-screen p-6 text-gray-900 bg-gradient-to-b from-white to-red-50">
 
-<div class="main-container">
-<h2>Gestión Escuelas del IC</h2>
-<div class="formulario">
-  <form [formGroup]="carreraForm" (ngSubmit)="enviar()">
-    <label for="nombre" class="sr-only">Nombre</label>
-    <input type="text" formControlName="nombre" placeholder="Nombre de la carrera" />
-    
-    <label for="nomenclatura" class="sr-only">Nomenclatura</label>
-    <input type="text" formControlName="nomenglatura" placeholder="Nomenclatura (1 letra)" maxlength="1" />
-    
-    <button type="submit" [disabled]="carreraForm.invalid">
-      {{ editMode ? 'Actualizar' : 'Crear' }}
-    </button>
-    <button type="button" *ngIf="editMode" (click)="resetForm()">Cancelar</button>
-  </form>
-</div>
+  <!-- Título -->
+  <h2 class="mb-6 text-3xl font-bold text-red-700">Gestión de Escuelas del IC</h2>
 
-<div class="cards-container">
-  <div class="card" *ngFor="let c of carrerasPaginadas">
-    <div class="icon">{{ c.nomenglatura }}</div>
-    <div class="info">
-      <h3>{{ c.nombre }}</h3>
-      <p class="estado" [class.activo]="c.status" [class.inactivo]="!c.status">
-         Estado: {{ c.status ? 'Activo' : 'Inactivo' }}
-        </p>
+  <!-- FORMULARIO -->
+  <div class="p-6 mb-10 bg-white border border-red-100 shadow-xl rounded-2xl">
+    <form class="grid grid-cols-1 gap-4 md:grid-cols-3" [formGroup]="carreraForm" (ngSubmit)="enviar()">
 
-    </div>
-    <div class="actions">
-      <button (click)="editar(c)">✏️</button>
-      <button (click)="eliminar(c.id)">🗑️</button>
+      <input 
+        type="text"
+        formControlName="nombre"
+        placeholder="Nombre de la carrera"
+        class="w-full p-3 border border-red-200 shadow-sm rounded-xl focus:ring-2 focus:ring-red-400 focus:outline-none"
+      />
+
+      <input 
+        type="text"
+        formControlName="nomenglatura"
+        maxlength="1"
+        placeholder="Nomenclatura"
+        class="w-full p-3 border border-red-200 shadow-sm rounded-xl focus:ring-2 focus:ring-red-400 focus:outline-none"
+      />
+
+      <button 
+        type="submit"
+        [disabled]="carreraForm.invalid"
+        class="w-full p-3 font-semibold text-white transition-all bg-red-600 shadow-md hover:bg-red-700 disabled:bg-red-300 rounded-xl"
+      >
+        {{ editMode ? 'Actualizar' : 'Crear' }}
+      </button>
+
+      <!-- Cancelar -->
+      <button 
+        *ngIf="editMode"
+        type="button"
+        (click)="resetForm()"
+        class="p-3 text-gray-700 transition bg-gray-200 shadow-sm hover:bg-gray-300 rounded-xl"
+      >
+        Cancelar
+      </button>
+    </form>
+  </div>
+
+  <!-- CARDS -->
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div 
+      class="p-5 transition-all bg-white border border-red-100 shadow-md rounded-2xl hover:shadow-xl"
+      *ngFor="let c of carrerasPaginadas"
+    >
+      <div class="flex items-start justify-between">
+        <div class="flex items-center justify-center w-16 h-16 text-4xl font-black text-red-700 bg-red-100 rounded-xl">
+          {{ c.nomenglatura }}
+        </div>
+
+        <div class="flex gap-3">
+          <button (click)="editar(c)" class="text-xl text-blue-600 transition hover:scale-110">✏️</button>
+          <button (click)="eliminar(c.id)" class="text-xl text-red-600 transition hover:scale-110">🗑️</button>
+        </div>
+      </div>
+
+      <h3 class="mt-4 text-xl font-semibold">{{ c.nombre }}</h3>
+
+      <p 
+        class="mt-2 font-medium"
+        [class.text-green-600]="c.status"
+        [class.text-red-600]="!c.status"
+      >
+        Estado: {{ c.status ? 'Activo' : 'Inactivo' }}
+      </p>
+
     </div>
   </div>
-</div>
 
-<div class="paginacion">
-  <button 
-    *ngFor="let page of pages" 
-    (click)="cambiarPagina(page)" 
-    [class.activa]="page === currentPage">
-    {{ page }}
-  </button>
-</div>
+  <!-- PAGINACIÓN -->
+  <div class="flex justify-center gap-3 mt-10">
+    <button
+      *ngFor="let page of pages"
+      (click)="cambiarPagina(page)"
+      class="px-4 py-2 transition-all border shadow-sm rounded-xl"
+      [class.bg-red-600]="page === currentPage"
+      [class.text-white]="page === currentPage"
+      [class.border-red-400]="page === currentPage"
+    >
+      {{ page }}
+    </button>
+  </div>
 
 </div>

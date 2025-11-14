@@ -17,12 +17,14 @@ import { Rol } from '../../core/models/rol.model';
 export class Sidebar implements OnInit {
   isCollapsed = false;
   isMobile = false;
+  sidebarOpen = false;   
   showOverlay = false;
   usuario!: Usuario;
   roles: Rol[] = [];
 
   @Input() collapsed = false;
   @Output() collapsedChange = new EventEmitter<boolean>();
+  @HostListener('window:resize')
 
   menu = [
     { label: 'Home', icon: 'fas fa-home', route: '/app/home' },
@@ -54,41 +56,44 @@ export class Sidebar implements OnInit {
 
   ngOnInit(): void {
     this.detectarPantalla();
+    window.addEventListener('resize', () => this.detectarPantalla());
 
     const userId = this.authService.getUserIdFromToken();
-    this.rolService.getAll().subscribe({
-      next: (rolesData) => this.roles = rolesData,
-      error: (err) => console.error('Error al cargar los roles', err)
-    });
 
+    this.rolService.getAll().subscribe({ next: r => this.roles = r });
     if (userId) {
-      this.usuarioService.obtener(userId).subscribe({
-        next: (data) => this.usuario = data,
-        error: (err) => console.error('Error al cargar el usuario', err)
-      });
+      this.usuarioService.obtener(userId).subscribe({ next: u => this.usuario = u });
     }
   }
 
-  /** Detectar si es móvil */
-  @HostListener('window:resize')
   detectarPantalla() {
-    this.isMobile = window.innerWidth < 1024; // Menor a "lg"
+    this.isMobile = window.innerWidth < 1024;
+
     if (this.isMobile) {
-      this.isCollapsed = true;
+      this.isCollapsed = false; 
+      this.sidebarOpen = false;   // cerrado por defecto en móvil
     } else {
-      this.isCollapsed = false;
-      this.showOverlay = false;
+      this.sidebarOpen = true;    // siempre abierto en desktop
     }
   }
-
   toggleSidebar() {
     if (this.isMobile) {
-      this.isCollapsed = !this.isCollapsed;
-      this.showOverlay = !this.isCollapsed;
+      this.sidebarOpen = !this.sidebarOpen;
     } else {
       this.isCollapsed = !this.isCollapsed;
     }
-    this.collapsedChange.emit(this.isCollapsed);
+  }
+
+  closeSidebarMobile() {
+    if (this.isMobile) {
+      this.sidebarOpen = false;
+    }
+  }
+
+  autoCloseOnMobile() {
+    if (this.isMobile) {
+      this.sidebarOpen = false;
+    }
   }
 
   obtenerRolTexto(rolid: number): string {
