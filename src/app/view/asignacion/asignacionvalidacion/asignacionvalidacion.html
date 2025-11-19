@@ -1,129 +1,148 @@
-<div *ngFor="let asig of asignaciones" class="card my-3 shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title">
-      Plan: {{ asig.plan }} | Modalidad: {{ asig.modalidad }} |
-      Carrera:
-      {{ asig.carreraid && carrerasMap[asig.carreraid] 
-          ? carrerasMap[asig.carreraid].nombre 
-          : 'Sin carrera' }}
-    </h5>
+<!-- Contenedor principal -->
+<div class="p-6 max-w-[1400px] mx-auto space-y-6">
 
-    <div *ngIf="cursosPorAsignacion[asig.id]">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>Curso</th>
-            <th>Sección</th>
-            <th>Docente</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
+  <h3 class="mb-6 text-3xl font-bold text-center text-red-600">
+    Gestión de Asignaciones
+  </h3>
 
-        <tbody>
-        <ng-container *ngFor="let curso of cursosPorAsignacion[asig.id]">
-          <tr *ngIf="!curso.es_bloque || (curso.es_bloque && curso.activo)">
-            <td>
-              {{ curso.curso_id && cursosMap[curso.curso_id] 
-                  ? cursosMap[curso.curso_id].nombre 
-                  : ('Curso ' + curso.curso_id) }}
-            </td>
-            <td>{{ curso.seccion }}</td>
-            <td>
-              {{ curso.docente_id && docentesMap[curso.docente_id] 
-                  ? docentesMap[curso.docente_id].nombre 
-                  : ('Docente ' + curso.docente_id) }}
-            </td>
-            <td>
-              <button class="btn btn-primary btn-sm" 
-                      (click)="curso.docente_id && abrirModal(curso.docente_id, asig.modalidad!)">
-                Ver Disponibilidad
-              </button>
-            </td>
-          </tr>
-        </ng-container>
-      </tbody>
+  <ng-container *ngFor="let asig of asignaciones(); trackBy: trackByAsignacion">
+    <div class="p-6 transition bg-white border border-gray-200 shadow-md rounded-2xl hover:shadow-lg">
+      
+      <!-- Header asignación -->
+      <div class="flex flex-col gap-4 mb-4 md:flex-row md:items-center md:justify-between">
+        <h4 class="text-xl font-semibold text-gray-800">
+          Plan: {{ asig.plan }} • Modalidad: {{ asig.modalidad }}
+        </h4>
+        <button (click)="enviarCorreos(asig.id)"
+                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-red-600 rounded-lg shadow hover:bg-red-700">
+          <ng-icon name="lucideMail" class="w-6 h-6 text-white-600"></ng-icon> Notificar Docentes
+        </button>
+      </div>
 
-      </table>
+      <!-- Tabla de cursos -->
+      <div *ngIf="cursosPorAsignacion()[asig.id]" class="overflow-x-auto border border-gray-200 custom-scroll rounded-xl">
+        <table class="min-w-full text-sm text-left rounded-lg bg-white/90">
+          <thead class="border-b border-gray-200 bg-gray-50">
+            <tr class="text-xs text-gray-700 uppercase">
+              <th class="px-4 py-2">Curso</th>
+              <th class="px-4 py-2">Sección</th>
+              <th class="px-4 py-2">Docente</th>
+              <th class="px-4 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let curso of cursosPorAsignacion()[asig.id]; trackBy: trackByCurso"
+                class="transition border-b last:border-b-0 hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium text-gray-800">{{ cursosMap()[curso.curso_id]?.nombre || ('Curso ' + curso.curso_id) }}</td>
+              <td class="px-4 py-2 text-gray-600">{{ curso.seccion }}</td>
+              <td class="px-4 py-2 text-gray-700">
+                {{ curso.docente_id != null ? (docentesMap()[curso.docente_id]?.nombre || ('Docente ' + curso.docente_id)) : 'Sin docente' }}
+              </td>
+              <td class="px-4 py-2">
+                <div class="flex flex-wrap gap-2">
+                  <button class="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-100 text-sm transition"
+                          (click)="curso.docente_id && abrirModal(curso.docente_id, MODALIDADES['PRESENCIAL'])">
+                    <ng-icon name="lucideEye" class="w-6 h-6 text-gray-800"></ng-icon> Ver Disponibilidad
+                  </button>
+                  <button *ngIf="curso.es_bloque"
+                          [ngClass]="curso.activo 
+                            ? 'px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg shadow flex items-center gap-1'
+                            : 'px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg shadow-sm flex items-center gap-1'">
 
-      <!-- ✅ Botón de notificación agregado aquí -->
-      <button class="btn btn-success btn-sm mt-2"
-              (click)="enviarCorreos(asig.id)">
-        📩 Notificar Docentes
-      </button>
+                    <ng-icon 
+                      [name]="curso.activo ? 'lucideLockOpen' : 'lucideLock'" 
+                      [class.text-white]="curso.activo"
+                      [class.text-red-600]="!curso.activo"
+                      class="w-4 h-4">
+                    </ng-icon>
+
+                    <span 
+                      [class.text-white]="curso.activo" 
+                      [class.text-red-600]="!curso.activo">
+                      {{ curso.activo ? 'Activo' : 'Bloque' }}
+                    </span>
+
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
     </div>
-  </div>
+  </ng-container>
 </div>
 
+<!-- Modal -->
+<div *ngIf="mostrarModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="w-full max-w-6xl overflow-hidden bg-white border border-gray-200 shadow-2xl rounded-2xl animate-fadeIn">
+    
+    <!-- Header Modal -->
+    <div class="flex items-center justify-between px-6 py-4 text-white bg-gradient-to-r from-red-600 via-red-500 to-rose-500">
+      <h4 class="flex items-center gap-2 text-lg font-semibold"><ng-icon name="lucideCalendar" class="w-5 h-5 text-white-600"></ng-icon> Disponibilidad del Docente</h4>
+      <button (click)="cerrarModal()" 
+        class="text-2xl font-bold transition-transform duration-300 transform text-white/90 hover:text-white hover:rotate-90">✖️</button>
+    </div>
 
-<!-- ✅ Modal solo lectura -->
-<div class="modal fade show" tabindex="-1" role="dialog" *ngIf="mostrarModal" style="display:block;">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content shadow-lg">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">Disponibilidad del Docente</h5>
-        <button type="button" class="btn-close" (click)="cerrarModal()"></button>
+    <!-- Contenido Modal -->
+    <div class="p-6 space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:gap-6">
+        <label class="flex items-center w-full gap-3">
+          <span class="text-sm font-semibold text-gray-700">Modalidad</span>
+          <select class="w-full px-3 py-2 transition bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-400"
+                  [value]="modalidadSeleccionada()"
+                  (change)="seleccionarModalidad($any($event.target).value)">
+            <option value="PRESENCIAL">PRESENCIAL</option>
+            <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
+            <option value="DISTANCIA">DISTANCIA</option>
+          </select>
+        </label>
+
+        <label class="flex items-center w-full gap-3 mt-2 sm:mt-0">
+          <span class="text-sm font-semibold text-gray-700">Turno</span>
+          <select class="w-full px-3 py-2 transition bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-400"
+                  [value]="turnoSeleccionado() ?? ''"
+                  (change)="seleccionarTurno($any($event.target).value)">
+            <option value="" disabled>Seleccionar</option>
+            <option *ngFor="let t of turnosDisponibles()" [value]="t">{{ t }}</option>
+          </select>
+        </label>
       </div>
 
-      <div class="modal-body">
-
-        <!-- Selección de modalidad -->
-        <div class="row mb-3">
-          <div class="col-auto">
-            <label class="fw-bold me-2">Modalidad:</label>
-            <select class="form-select"
-                    [value]="modalidadSeleccionada"
-                    (change)="seleccionarModalidad($any($event.target).value)">
-              <option value="PRESENCIAL">PRESENCIAL</option>
-              <option value="SEMIPRESENCIAL">SEMIPRESENCIAL</option>
-              <option value="DISTANCIA">DISTANCIA</option>
-            </select>
+      <!-- Disponibilidad -->
+      <div class="overflow-auto border border-gray-200 rounded-xl custom-scroll">
+        <div class="min-w-full">
+          <div class="grid grid-cols-[120px_repeat(7,1fr)] items-center gap-2 bg-gray-50 p-3 font-semibold text-gray-700 border-b border-gray-200">
+            <div>Hora</div>
+            <ng-container *ngFor="let d of dias"><div class="text-center">{{ d }}</div></ng-container>
           </div>
 
-          <!-- Turno -->
-          <div class="col-auto">
-            <label class="fw-bold me-2">Turno:</label>
-            <select class="form-select"
-                    [value]="turnoSeleccionado ?? ''"
-                    (change)="seleccionarTurno($any($event.target).value)">
-              <option value="" disabled>Seleccionar</option>
-              <option *ngFor="let turno of getTurnosDisponibles()" [value]="turno">
-                {{ turno }}
-              </option>
-            </select>
+          <div *ngFor="let bloque of (turnoSeleccionado() ? generarBloques(turnoSeleccionado()!, modalidadSeleccionada()) : [])"
+              class="grid grid-cols-[120px_repeat(7,1fr)] items-center gap-2 p-3 border-b border-gray-100 bg-white">
+            <div class="font-medium text-gray-700">{{ bloque }}</div>
+            <ng-container *ngFor="let d of dias">
+              <ng-container *ngIf="disponibilidadSeleccionada()[d] as dia">
+                <div class="flex items-center justify-center h-10 transition rounded-lg select-none"
+                      [ngClass]="dia[bloque]
+                        ? 'bg-green-100 ring-2 ring-green-300 text-green-800 font-semibold shadow-inner'
+                        : 'bg-gray-50 border border-gray-200 text-gray-400'">
+                  <span class="text-sm">{{ dia[bloque] ? 'Disponible' : '' }}</span>
+                </div>
+              </ng-container>
+            </ng-container>
           </div>
         </div>
-
-        <!-- 📌 Matriz visual de disponibilidad -->
-        <div class="table-responsive mt-3">
-          <table class="table table-bordered align-middle text-center disponibilidad-table">
-            <thead class="table-primary">
-              <tr>
-                <th>Hora</th>
-                <th *ngFor="let dia of dias">{{ dia }}</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr *ngFor="let bloque of (turnoSeleccionado ? generarBloques(turnoSeleccionado) : [])">
-                <td class="fw-bold bg-light">{{ bloque }}</td>
-
-                <td *ngFor="let dia of dias"
-                    [class.slot-disponible]="disponibilidadSeleccionada[dia][bloque]"
-                    [class.slot-vacio]="!disponibilidadSeleccionada[dia][bloque]">
-
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-
       </div>
 
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
-      </div>
+    </div>
+
+    <!-- Footer Modal -->
+    <div class="flex justify-end gap-3 p-4 bg-white border-t border-gray-200">
+      <button class="px-4 py-2 transition border border-gray-300 rounded-lg hover:bg-gray-100" (click)="cerrarModal()">
+        Cerrar
+      </button>
     </div>
   </div>
 </div>

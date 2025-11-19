@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Input, Output, EventEmitter, HostListener } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit, Input, Output, EventEmitter, signal } from '@angular/core';
+import { RouterModule, Router } from '@angular/router';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { Usuario } from '../../core/models/usuario.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,19 +12,18 @@ import { Rol } from '../../core/models/rol.model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.css'
+  styleUrls: ['./sidebar.css']
 })
 export class Sidebar implements OnInit {
-  isCollapsed = false;
-  isMobile = false;
-  sidebarOpen = false;   
-  showOverlay = false;
-  usuario!: Usuario;
-  roles: Rol[] = [];
+  isCollapsed = signal(false);
+  isMobile = signal(false);
+  sidebarOpen = signal(false);
+
+  usuario = signal<Usuario | null>(null);
+  roles = signal<Rol[]>([]);
 
   @Input() collapsed = false;
   @Output() collapsedChange = new EventEmitter<boolean>();
-  @HostListener('window:resize')
 
   menu = [
     { label: 'Home', icon: 'fas fa-home', route: '/app/home' },
@@ -51,7 +50,8 @@ export class Sidebar implements OnInit {
   constructor(
     private usuarioService: UsuarioService,
     private authService: AuthService,
-    private rolService: RolService
+    private rolService: RolService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -60,44 +60,50 @@ export class Sidebar implements OnInit {
 
     const userId = this.authService.getUserIdFromToken();
 
-    this.rolService.getAll().subscribe({ next: r => this.roles = r });
+    this.rolService.getAll().subscribe({ next: r => this.roles.set(r) });
     if (userId) {
-      this.usuarioService.obtener(userId).subscribe({ next: u => this.usuario = u });
+      this.usuarioService.obtener(userId).subscribe({ next: u => this.usuario.set(u) });
     }
   }
 
   detectarPantalla() {
-    this.isMobile = window.innerWidth < 1024;
+    this.isMobile.set(window.innerWidth < 1024);
 
-    if (this.isMobile) {
-      this.isCollapsed = false; 
-      this.sidebarOpen = false;   // cerrado por defecto en móvil
+    if (this.isMobile()) {
+      this.isCollapsed.set(false);
+      this.sidebarOpen.set(false); // cerrado por defecto en móvil
     } else {
-      this.sidebarOpen = true;    // siempre abierto en desktop
+      this.sidebarOpen.set(true); // siempre abierto en desktop
     }
   }
+
   toggleSidebar() {
-    if (this.isMobile) {
-      this.sidebarOpen = !this.sidebarOpen;
+    if (this.isMobile()) {
+      this.sidebarOpen.set(!this.sidebarOpen());
     } else {
-      this.isCollapsed = !this.isCollapsed;
+      this.isCollapsed.set(!this.isCollapsed());
     }
   }
 
   closeSidebarMobile() {
-    if (this.isMobile) {
-      this.sidebarOpen = false;
+    if (this.isMobile()) {
+      this.sidebarOpen.set(false);
     }
   }
 
   autoCloseOnMobile() {
-    if (this.isMobile) {
-      this.sidebarOpen = false;
+    if (this.isMobile()) {
+      this.sidebarOpen.set(false);
     }
   }
 
   obtenerRolTexto(rolid: number): string {
-    const rol = this.roles.find(r => r.id === rolid);
+    const rol = this.roles().find(r => r.id === rolid);
     return rol ? rol.nombre : 'Usuario';
+  }
+
+  cerrarSesion() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

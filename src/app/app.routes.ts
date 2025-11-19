@@ -55,7 +55,7 @@ export const routes: Routes = [
       { 
         path: 'docente',
         loadChildren: () => import('./view/docente/docente.routes').then(m => m.DOCENTE_ROUTES)
-       },
+      },
 
       // Sección académica
       { path: 'curso', component: Curso },

@@ -118,16 +118,16 @@ export class AsignacionService {
     );
   }
 
-   actualizarRelacion(
-    relacionId: number,
-    data: AsignacionCursoDocenteUpdate
-  ): Observable<AsignacionCursoDocenteResponse> {
-    return this.http.patch<AsignacionCursoDocenteResponse>(
-      `${this.apiUrl}/relaciones/${relacionId}`,
-      data,
-      { headers: this.getAuthHeaders() }
-    );
-  }
+    actualizarRelacion(
+      relacionId: number,
+      data: AsignacionCursoDocenteUpdate
+    ): Observable<AsignacionCursoDocenteResponse> {
+      return this.http.patch<AsignacionCursoDocenteResponse>(
+        `${this.apiUrl}/relaciones/${relacionId}`,
+        data,
+        { headers: this.getAuthHeaders() }
+      );
+    }
 
 
   activarBloque(
@@ -164,6 +164,15 @@ export class AsignacionService {
         { headers: this.getAuthHeaders() }
       );
     }
+
+    actualizarTipoAmbiente(relacionId: number, tipoambiente: number): Observable<AsignacionCursoDocenteResponse> {
+      return this.http.patch<AsignacionCursoDocenteResponse>(
+        `${this.apiUrl}/relaciones/${relacionId}/tipoambiente`,
+        { tipoambiente },
+        { headers: this.getAuthHeaders() }
+      );
+    }
+
 
 
 }
