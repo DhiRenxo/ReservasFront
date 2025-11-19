@@ -51,10 +51,10 @@ export class AmbienteService{
 
     cambiarEstado(id: number, estado: boolean): Observable<AmbienteModel> {
         return this.http.patch<AmbienteModel>(
-          `${this.apiUrl}/estado/${id}`,
-          { estado },
+        `${this.apiUrl}/estado/${id}`,
+        { estado },
     
-          { headers: this.getAuthHeaders() }
+        { headers: this.getAuthHeaders() }
         );
-      }
+    }
 }
