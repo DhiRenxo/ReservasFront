@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "tailwindcss";
+
+/* Añade estilos adicionales si necesitas */
+body { background: linear-gradient(180deg, #fff 0%, #fff6f6 100%); }
+

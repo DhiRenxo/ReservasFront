@@ -9,7 +9,7 @@ import { AmbienteModel } from "../models/ambiente.models";
 })
 
 export class AmbienteService{
-    private apiUrl= `${environment.apiBaseUrl}/api/ambientes`;
+    private apiUrl= `${environment.apiBaseUrl}/api/ambientes/`;
 
     constructor(private http: HttpClient){}
 
@@ -26,13 +26,10 @@ export class AmbienteService{
     }
 
     obtener(id: number): Observable<AmbienteModel>{
-        return this.http.get<AmbienteModel>(`${this.apiUrl}/${id}`, {headers: this.getAuthHeaders()});
+        return this.http.get<AmbienteModel>(`${this.apiUrl}${id}`, {headers: this.getAuthHeaders()});
     }
 
     crear(ambiente: AmbienteModel): Observable<AmbienteModel> {
-        console.log("📤 Enviando datos al backend:", ambiente);
-        console.log("🌐 Endpoint:", this.apiUrl);
-
         return this.http.post<AmbienteModel>(
             this.apiUrl,
             ambiente,
@@ -42,16 +39,16 @@ export class AmbienteService{
 
 
     actualizar(id: number, amebiente:Partial<AmbienteModel>): Observable<AmbienteModel>{
-        return this.http.put<AmbienteModel>(`${this.apiUrl}/${id}`, amebiente, {headers: this.getAuthHeaders()});
+        return this.http.put<AmbienteModel>(`${this.apiUrl}${id}`, amebiente, {headers: this.getAuthHeaders()});
     }
 
     eliminar(id: number): Observable<any>{
-        return this.http.delete(`${this.apiUrl}/${id}`, {headers: this.getAuthHeaders()});
+        return this.http.delete(`${this.apiUrl}${id}`, {headers: this.getAuthHeaders()});
     }
 
     cambiarEstado(id: number, estado: boolean): Observable<AmbienteModel> {
         return this.http.patch<AmbienteModel>(
-        `${this.apiUrl}/estado/${id}`,
+        `${this.apiUrl}estado/${id}`,
         { estado },
     
         { headers: this.getAuthHeaders() }

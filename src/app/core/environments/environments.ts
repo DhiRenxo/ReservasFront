@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8000'  // cambia según tu backend
+  apiBaseUrl: 'https://reservasapi-production-9bd1.up.railway.app'  // cambia según tu backend
 };

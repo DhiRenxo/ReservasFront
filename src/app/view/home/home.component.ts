@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../core/services/usuario.service';
+import { HttpClient } from '@angular/common/http';
 import { RolService } from '../../core/services/rol.service';
 import { Usuario } from '../../core/models/usuario.model';
 import { Rol } from '../../core/models/rol.model';
@@ -380,7 +381,5 @@ export class HomeComponent implements OnInit {
   get tieneCursosActivos() {
     return this.cursosAsignados?.some(c => c.estado);
   }
-
-
 
 }

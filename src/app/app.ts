@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import { LucideAngularModule, Mail, Eye, Lock, Calendar } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
 
 
 @Component({
@@ -11,6 +11,14 @@ import { LucideAngularModule, Mail, Eye, Lock, Calendar } from 'lucide-angular';
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('reservas');
+
+
+  constructor() {}
+
+  ngOnInit(): void {
+    // Aquí podrías cargar roles si es necesario en producción,
+    // pero la prueba de consola se ha eliminado.
+  }
 }

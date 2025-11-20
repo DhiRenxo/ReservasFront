@@ -6,7 +6,7 @@ import { environment } from '../environments/environments';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
-  private baseUrl = `${environment.apiBaseUrl}/api/usuarios`;
+  private baseUrl = `${environment.apiBaseUrl}/api/usuarios/`;
 
   constructor(private http: HttpClient) {}
 
@@ -24,7 +24,7 @@ export class UsuarioService {
   }
 
   obtener(id: number): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.baseUrl}/${id}`, {
+    return this.http.get<Usuario>(`${this.baseUrl}${id}`, {
       headers: this.getAuthHeaders()
     });
   }
@@ -36,20 +36,20 @@ export class UsuarioService {
   }
 
   actualizar(id: number, usuario: Partial<Usuario>): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.baseUrl}/${id}`, usuario, {
+    return this.http.put<Usuario>(`${this.baseUrl}${id}`, usuario, {
       headers: this.getAuthHeaders()
     });
   }
 
   eliminar(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`, {
+    return this.http.delete(`${this.baseUrl}${id}`, {
       headers: this.getAuthHeaders()
     });
   }
 
   actualizarCodigoDocente(id: number, codDocente: string): Observable<Usuario> {
     const body = { cod_docente: codDocente };
-    return this.http.put<Usuario>(`${this.baseUrl}/${id}/cod-docente`, body, {
+    return this.http.put<Usuario>(`${this.baseUrl}${id}/cod-docente`, body, {
       headers: this.getAuthHeaders()
     });
   }
