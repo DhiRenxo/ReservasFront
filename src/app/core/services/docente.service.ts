@@ -6,7 +6,7 @@ import { environment } from '../environments/environments';
 
 @Injectable({ providedIn: 'root' })
 export class DocenteService {
-  private baseUrl = `${environment.apiBaseUrl}/api/docentes`;
+  private baseUrl = `${environment.apiBaseUrl}/api/docentes/`;
 
   constructor(private http: HttpClient) {}
 
@@ -24,7 +24,7 @@ export class DocenteService {
   }
 
   obtener(id: number): Observable<Docente> {
-    return this.http.get<Docente>(`${this.baseUrl}/${id}`, {
+    return this.http.get<Docente>(`${this.baseUrl}${id}`, {
       headers: this.getAuthHeaders()
     });
   }
@@ -36,13 +36,13 @@ export class DocenteService {
   }
 
   actualizar(id: number, usuario: Partial<Docente>): Observable<Docente> {
-    return this.http.put<Docente>(`${this.baseUrl}/${id}`, usuario, {
+    return this.http.put<Docente>(`${this.baseUrl}${id}`, usuario, {
       headers: this.getAuthHeaders()
     });
   }
 
   eliminar(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`, {
+    return this.http.delete(`${this.baseUrl}${id}`, {
       headers: this.getAuthHeaders()
     });
   }

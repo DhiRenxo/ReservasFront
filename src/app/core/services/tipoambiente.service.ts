@@ -8,7 +8,7 @@ import { TipoAmbienteModel } from "../models/tipoambiente.models";
     providedIn: 'root'
 })
 export class TipoAmbienteService{
-    private apiUrl= `${environment.apiBaseUrl}/api/tiposambiente`;
+    private apiUrl= `${environment.apiBaseUrl}/api/tiposambiente/`;
     
     constructor(private http: HttpClient){}
 
@@ -26,14 +26,14 @@ export class TipoAmbienteService{
     }
 
     getbyId(id: number): Observable<TipoAmbienteModel>{
-        return this.http.get<TipoAmbienteModel>(`${this.apiUrl}/${id}`, {headers: this.getAuthHeaders()})
+        return this.http.get<TipoAmbienteModel>(`${this.apiUrl}${id}`, {headers: this.getAuthHeaders()})
     }
 
     post(tipo: TipoAmbienteModel): Observable<TipoAmbienteModel>{
         return this.http.post<TipoAmbienteModel>(this.apiUrl, tipo, {headers: this.getAuthHeaders()})
     }
     put(id: number, tipo: TipoAmbienteModel): Observable<TipoAmbienteModel> {
-    return this.http.put<TipoAmbienteModel>(`${this.apiUrl}/${id}`, tipo, {
+    return this.http.put<TipoAmbienteModel>(`${this.apiUrl}${id}`, tipo, {
         headers: this.getAuthHeaders()
     });
     }

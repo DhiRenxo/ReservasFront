@@ -8,7 +8,7 @@ import { environment } from '../environments/environments';
 })
 export class NotificacionService {
 
-  private baseUrl = `${environment.apiBaseUrl}/notificaciones`;
+  private baseUrl = `${environment.apiBaseUrl}/notificaciones/`;
 
   constructor(private http: HttpClient) {}
 
@@ -24,7 +24,7 @@ export class NotificacionService {
   /** 📢 1. Notificación de ASIGNACIÓN */
   enviarNotificacionAsignacion(asignacionId: number): Observable<any> {
     return this.http.post<any>(
-      `${this.baseUrl}/asignacion/${asignacionId}`,
+      `${this.baseUrl}asignacion/${asignacionId}`,
       {},
       { headers: this.getAuthHeaders() }
     );
@@ -33,7 +33,7 @@ export class NotificacionService {
   /** 📘 2. Confirmación de horario publicado */
   enviarConfirmacionHorario(asignacionId: number): Observable<any> {
     return this.http.post<any>(
-      `${this.baseUrl}/confirmacion/${asignacionId}`,
+      `${this.baseUrl}confirmacion/${asignacionId}`,
       {},
       { headers: this.getAuthHeaders() }
     );

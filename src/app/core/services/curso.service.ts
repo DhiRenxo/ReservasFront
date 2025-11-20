@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class CursoService {
-  private apiUrl = `${environment.apiBaseUrl}/cursos`;
+  private apiUrl = `${environment.apiBaseUrl}/cursos/`;
 
   constructor(private http: HttpClient) {}
 
@@ -25,11 +25,11 @@ export class CursoService {
   }
 
   getActivos(): Observable<CursoModel[]> {
-    return this.http.get<CursoModel[]>(`${this.apiUrl}/activos`, { headers: this.getAuthHeaders() });
+    return this.http.get<CursoModel[]>(`${this.apiUrl}activos`, { headers: this.getAuthHeaders() });
   }
 
   getById(id: number): Observable<CursoModel> {
-    return this.http.get<CursoModel>(`${this.apiUrl}/${id}`, { headers: this.getAuthHeaders() });
+    return this.http.get<CursoModel>(`${this.apiUrl}${id}`, { headers: this.getAuthHeaders() });
   }
 
   create(curso: CursoModel): Observable<CursoModel> {
@@ -37,15 +37,15 @@ export class CursoService {
   }
 
   update(id: number, curso: CursoModel): Observable<CursoModel> {
-    return this.http.put<CursoModel>(`${this.apiUrl}/${id}`, curso, { headers: this.getAuthHeaders() });
+    return this.http.put<CursoModel>(`${this.apiUrl}${id}`, curso, { headers: this.getAuthHeaders() });
   }
 
   toggleEstado(id: number): Observable<CursoModel> {
-    return this.http.patch<CursoModel>(`${this.apiUrl}/${id}/cambiar-estado`, {}, { headers: this.getAuthHeaders() });
+    return this.http.patch<CursoModel>(`${this.apiUrl}${id}/cambiar-estado`, {}, { headers: this.getAuthHeaders() });
   }
 
   actualizarHoras(id: number, horas: number): Observable<CursoModel> {
-      return this.http.patch<CursoModel>(`${this.apiUrl}/${id}/actualizar-horas/${horas}`, {}, { headers: this.getAuthHeaders() });
+      return this.http.patch<CursoModel>(`${this.apiUrl}${id}/actualizar-horas/${horas}`, {}, { headers: this.getAuthHeaders() });
     }
 
   getByFiltro(carreraid: number, plan: string, ciclo: string, modalidad: string): Observable<CursoModel[]> {
@@ -55,7 +55,7 @@ export class CursoService {
     ciclo,
     modalidad
   };
-  return this.http.get<CursoModel[]>(`${this.apiUrl}/filtro`, {
+  return this.http.get<CursoModel[]>(`${this.apiUrl}filtro`, {
     headers: this.getAuthHeaders(),
     params
   });

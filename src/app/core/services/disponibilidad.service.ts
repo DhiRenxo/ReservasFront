@@ -13,7 +13,7 @@ import {
 })
 export class DisponibilidadService {
 
-  private apiUrl = `${environment.apiBaseUrl}/disponibilidad`;
+  private apiUrl = `${environment.apiBaseUrl}/disponibilidad/`;
 
   constructor(private http: HttpClient) {}
 
@@ -29,7 +29,7 @@ export class DisponibilidadService {
   // Crear o actualizar disponibilidad (Docente)
   createDisponibilidad(data: DisponibilidadDocenteCreate): Observable<DisponibilidadDocenteResponse> {
     return this.http.post<DisponibilidadDocenteResponse>(
-      `${this.apiUrl}/`, 
+      `${this.apiUrl}`, 
       data, 
       { headers: this.getAuthHeaders() }
     );
@@ -38,7 +38,7 @@ export class DisponibilidadService {
   // Actualizar disponibilidad (Docente)
   updateDisponibilidad(id: number, data: DisponibilidadDocenteUpdate): Observable<DisponibilidadDocenteResponse> {
     return this.http.put<DisponibilidadDocenteResponse>(
-      `${this.apiUrl}/${id}`, 
+      `${this.apiUrl}${id}`, 
       data, 
       { headers: this.getAuthHeaders() }
     );
@@ -48,14 +48,14 @@ export class DisponibilidadService {
   deleteDisponibilidad(dia: string, modalidad: string, turno: string): Observable<any> {
     const params: any = { dia, modalidad, turno };
     return this.http.delete<any>(
-      `${this.apiUrl}/`, 
+      `${this.apiUrl}`, 
       { headers: this.getAuthHeaders(), params }
     );
   }
 
   // Listar disponibilidades por docente (Administrador)
   getDisponibilidadesDocente(docente_id: number, modalidad?: string, turno?: string): Observable<DisponibilidadDocenteResponse[]> {
-    let url = `${this.apiUrl}/docente/${docente_id}`;
+    let url = `${this.apiUrl}docente/${docente_id}`;
     let params: any = {};
     if (modalidad) params.modalidad = modalidad;
     if (turno) params.turno = turno;
@@ -66,14 +66,14 @@ export class DisponibilidadService {
   // Obtener disponibilidad por ID (Administrador)
   getDisponibilidadById(id: number): Observable<DisponibilidadDocenteResponse> {
     return this.http.get<DisponibilidadDocenteResponse>(
-      `${this.apiUrl}/${id}`, 
+      `${this.apiUrl}${id}`, 
       { headers: this.getAuthHeaders() }
     );
   }
 
   getByDocente(docenteId: number, modalidad: string, turno: string): Observable<DisponibilidadDocenteResponse[]> {
     return this.http.get<DisponibilidadDocenteResponse[]>(
-      `${this.apiUrl}/docente/${docenteId}?modalidad=${modalidad}&turno=${turno}`
+      `${this.apiUrl}docente/${docenteId}?modalidad=${modalidad}&turno=${turno}`
     );
   }
 

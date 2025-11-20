@@ -6,9 +6,8 @@ import { environment } from '../environments/environments';
 
 @Injectable({providedIn: 'root'})
     export class CarreraService{
-        private baseUrl = `${environment.apiBaseUrl}/carreras`;
+        private baseUrl = `${environment.apiBaseUrl}/carreras/`;
         constructor(private http:HttpClient) {}
-           
         private getAuthHeaders(): HttpHeaders {
         const token = localStorage.getItem('access_token');
         return new HttpHeaders({
@@ -23,7 +22,7 @@ import { environment } from '../environments/environments';
     }
 
     obtener(id: number): Observable<CarreraModel> {
-        return this.http.get<CarreraModel>(`${this.baseUrl}/${id}`, {
+        return this.http.get<CarreraModel>(`${this.baseUrl}${id}`, {
         headers: this.getAuthHeaders()
         });
     }
@@ -35,13 +34,13 @@ import { environment } from '../environments/environments';
     }
 
     actualizar(id: number, usuario: Partial<CarreraModel>): Observable<CarreraModel> {
-        return this.http.put<CarreraModel>(`${this.baseUrl}/${id}`, usuario, {
+        return this.http.put<CarreraModel>(`${this.baseUrl}${id}`, usuario, {
         headers: this.getAuthHeaders()
         });
     }
 
     eliminar(id: number): Observable<any> {
-        return this.http.delete(`${this.baseUrl}/${id}`, {
+        return this.http.delete(`${this.baseUrl}${id}`, {
         headers: this.getAuthHeaders()
         });
     }
