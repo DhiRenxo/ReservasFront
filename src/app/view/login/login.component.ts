@@ -34,7 +34,7 @@ export class LoginComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     
     window.google.accounts.id.initialize({
-      client_id: '42810701050-msob7or2min1au6v1o850mvjn8c87m28.apps.googleusercontent.com', 
+      client_id: '763954804482-3r39uuk35iqb94h6al0ut4urr2ic2cdv.apps.googleusercontent.com', 
       callback: this.handleCredentialResponse.bind(this)
     });
 
