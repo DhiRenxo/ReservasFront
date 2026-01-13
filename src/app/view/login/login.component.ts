@@ -22,7 +22,7 @@ declare global {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.css'
 })
 
 export class LoginComponent implements AfterViewInit {
